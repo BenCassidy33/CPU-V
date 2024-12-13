@@ -2,7 +2,7 @@ use std::{fmt, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub enum Section {
-    Program(ProgramLabel),
+    Label(ProgramLabel),
     Data(Option<Variable>),
     Env,
 }

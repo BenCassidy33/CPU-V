@@ -12,11 +12,17 @@ pub fn parse_file(file: String) {
         if line.contains(".section") {
             let (section_delim, section_name) = line.split_once(" ").unwrap();
             sections.push(match section_name {
-                ".program:" => Section::Program(ProgramLabel {
+                ".program:" => Section::Label(ProgramLabel {
                     label_name: "program".to_string(),
                     instructions: None,
                 }),
-                ".data:" => Section::Data(None),
+                ".data:" => Section::Data(None), // TODO: Fix this
+
+                //n if n.contains(":") => Section::Label(ProgramLabel {
+                //    label_name: n.to_string(),
+                //    instructions: None,
+                //}),
+                //
                 _ => {
                     eprintln!("Invalid Setion Type at Line: {}", line_num);
                     exit(1);
@@ -39,7 +45,7 @@ pub fn parse_file(file: String) {
         if instruction_type.is_ok() {
             let section = &mut sections[section_num - 1];
 
-            if let Section::Program(program) = section {
+            if let Section::Label(program) = section {
                 if program.instructions.is_none() {
                     program.instructions = Some(Vec::new());
                 }
