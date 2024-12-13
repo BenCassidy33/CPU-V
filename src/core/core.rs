@@ -3,6 +3,7 @@ use std::{fmt::write, process::exit};
 use crate::core::types::*;
 use std::str::FromStr;
 
+// TODO: add in label and data parsing
 pub fn parse_file(file: String) {
     let mut sections: Vec<Section> = Vec::new();
     let mut section_num = 0;
