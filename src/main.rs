@@ -2,7 +2,7 @@
 
 mod core;
 
-use crate::core::core::parse_file;
+use crate::core::parser::parse_file;
 use std::{env, fs, io::Read};
 
 fn main() {
