@@ -1,14 +1,35 @@
 use std::{fmt, str::FromStr};
 
-#[derive(Debug, Clone)]
-pub enum Section {
-    Label(ProgramLabel),
-    Data(Option<Variable>),
-    Env,
+#[derive(Debug)]
+pub struct Program {
+    pub data: Option<Data>,
+    pub labels: Option<Vec<Label>>,
+    pub env: Option<Env>,
 }
 
+impl Program {
+    pub fn new() -> Self {
+        return Program {
+            data: None,
+            labels: None,
+            env: None,
+        };
+    }
+}
+
+#[derive(Debug)]
+pub struct Data {}
+#[derive(Debug)]
+pub struct Env {}
+
+//#[derive(Debug, Clone)]
+//pub enum Section {
+//    Program(Option<Vec<Label>>),
+//    Data(Option<Variable>),
+//    Env,
+
 #[derive(Debug, Clone)]
-pub struct ProgramLabel {
+pub struct Label {
     pub label_name: String,
     pub instructions: Option<Vec<Instruction>>,
 }
@@ -68,11 +89,17 @@ pub struct Variable {
 #[derive(Debug, Clone)]
 pub struct Instruction {
     pub ty: InstructionType,
-    pub val: String,
+    pub val: InstructionValue,
     pub flags: Vec<Flag>,
 }
 
 #[derive(Debug, Clone)]
+enum InstructionValue {
+    SingleValue(String),
+    MultipleValue((String, String)),
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum InstructionType {
     // Load/Store Operations
     LDA, // Sets: N, Z
@@ -125,6 +152,8 @@ pub enum InstructionType {
 
     // Jumps and Calls. None set
     JMP,
+    JEQ,
+    JNE,
     JSR,
     RTS,
 
@@ -151,6 +180,10 @@ pub enum InstructionType {
     BRK, // Sets B
     NOP,
     RTI, // Sets All
+
+    // Custom
+    CAL, // Creates a funtion call to the os, Sets Interrupt
+    MOV, // Moves one value into another eg. mov from, to, Sets Interrupt
 }
 
 #[derive(Debug, Clone)]
@@ -236,12 +269,19 @@ impl InstructionType {
             | InstructionType::BNE
             | InstructionType::BPL
             | InstructionType::BVC
-            | InstructionType::BVS => vec![],
+            | InstructionType::BVS
+            | InstructionType::JEQ
+            | InstructionType::JNE => vec![],
 
             // Status Flag Changes
             InstructionType::CLC | InstructionType::SEC => vec![Flag::Carry],
             InstructionType::CLD | InstructionType::SED => vec![Flag::Decimal],
-            InstructionType::CLI | InstructionType::SEI => vec![Flag::Interrupt],
+            InstructionType::CLI
+            | InstructionType::SEI
+            | InstructionType::CAL
+            | InstructionType::MOV => {
+                vec![Flag::Interrupt]
+            }
             InstructionType::CLV => vec![Flag::Overflow],
 
             // System Functions
@@ -256,6 +296,29 @@ impl InstructionType {
                 Flag::Overflow,
                 Flag::Negative,
             ],
+        };
+    }
+
+    pub fn has_multiple_values(&self) -> bool {
+        return match self {
+            Self::JMP => true,
+            _ => false,
+        };
+    }
+
+    pub fn is_valueless(&self) -> bool {
+        return match self {
+            Self::TAX
+            | Self::TAY
+            | Self::TXA
+            | Self::TYA
+            | Self::TSX
+            | Self::TXS
+            | Self::PHA
+            | Self::PHP
+            | Self::PLA
+            | Self::PLP => true,
+            _ => false,
         };
     }
 }
@@ -323,5 +386,48 @@ impl FromStr for InstructionType {
             "RTI" => Ok(InstructionType::RTI),
             _ => Err(format!("Unknown instruction: {}", s)),
         }
+    }
+}
+
+impl FromStr for Instruction {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut instruction_label = String::new();
+        let mut value = String::new();
+
+        if let Some((left, right)) = s.trim().split_once(" ") {
+            instruction_label = left.to_string();
+            value = right.to_string();
+        } else {
+            instruction_label = s.trim().to_string();
+
+            if !InstructionType::from_str(&instruction_label.to_string())?.is_valueless() {
+                return Err(format!(
+                    "Error: Instruction is not valueless: {}, {:?}",
+                    instruction_label,
+                    InstructionType::from_str(&instruction_label.to_string()).unwrap()
+                ));
+            };
+        }
+
+        let ty = InstructionType::from_str(&instruction_label)?;
+        let mut values: Option<(&str, &str)> = None;
+        if ty.has_multiple_values() {
+            values = value.split_once(",");
+        }
+
+        return Ok(Self {
+            flags: ty.flags(),
+            ty,
+            val: match values {
+                Some(val) => {
+                    let left = val.0.to_string();
+                    let right = val.1.to_string();
+                    InstructionValue::MultipleValue((left, right))
+                }
+                None => InstructionValue::SingleValue(value.to_string()),
+            },
+        });
     }
 }

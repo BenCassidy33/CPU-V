@@ -1,65 +1,82 @@
-use std::{fmt::write, process::exit};
+use std::{any::Any, fmt::write, process::exit};
 
 use crate::core::types::*;
 use std::str::FromStr;
 
 // TODO: add in label and data parsing
-pub fn parse_file(file: String) {
-    let mut sections: Vec<Section> = Vec::new();
-    let mut section_num = 0;
+pub fn parse_file(file: String) -> Program {
+    let mut program = Program::new();
+    let f = file.split("\n").collect::<Vec<&str>>();
 
-    for (line_num, line) in file.split("\n").enumerate() {
+    let mut skip = 0;
+
+    for (line_num, line) in f.clone().into_iter().enumerate() {
+        if skip > 0 {
+            skip -= 1;
+            continue;
+        }
+
         if line.contains(".section") {
-            let (section_delim, section_name) = line.split_once(" ").unwrap();
-            sections.push(match section_name {
-                ".program:" => Section::Label(ProgramLabel {
-                    label_name: "program".to_string(),
-                    instructions: None,
-                }),
-                ".data:" => Section::Data(None), // TODO: Fix this
+            let (_, section_name) = line.split_once(" ").unwrap();
 
-                //n if n.contains(":") => Section::Label(ProgramLabel {
-                //    label_name: n.to_string(),
-                //    instructions: None,
-                //}),
-                //
+            match section_name {
+                ".data:" => {
+                    continue;
+                }
+
+                ".program:" => {
+                    continue;
+                }
+
                 _ => {
-                    eprintln!("Invalid Setion Type at Line: {}", line_num);
-                    exit(1);
+                    panic!(
+                        "Invalid Section Name: \"{}\"!. Perhaps you were trying to create a _label?",
+                        section_name
+                    )
                 }
-            });
+            }
 
-            section_num += 1;
             continue;
         }
 
-        if line.contains(":") {
-            continue;
-        }
+        if line.contains("_") && !line.contains("JMP") {
+            let label = line.trim();
+            let result = parse_label(&f[line_num + 1..]);
 
-        let Some((instruction, value)) = line.trim().split_once(" ") else {
-            continue;
-        };
+            skip = result.1;
 
-        let instruction_type = InstructionType::from_str(instruction);
-        if instruction_type.is_ok() {
-            let section = &mut sections[section_num - 1];
+            if program.labels.is_none() {
+                program.labels = Some(Vec::new());
+            }
 
-            if let Section::Label(program) = section {
-                if program.instructions.is_none() {
-                    program.instructions = Some(Vec::new());
-                }
-
-                let instruct = Instruction {
-                    flags: instruction_type.as_ref().unwrap().flags(),
-                    ty: instruction_type.unwrap(),
-                    val: value.to_string(),
-                };
-
-                program.instructions.as_mut().unwrap().push(instruct);
+            if let Some(ref mut labels) = program.labels {
+                labels.push(Label {
+                    label_name: label.to_string(),
+                    instructions: Some(result.0),
+                });
             }
         }
     }
 
-    println!("{:#?}", sections);
+    println!("{:#?}", program);
+
+    return program;
+}
+
+pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
+    let mut instructions: Vec<Instruction> = Vec::new();
+
+    for (line_idx, line) in label_instructions.iter().enumerate() {
+        if line.is_empty() {
+            continue;
+        }
+
+        if line.contains("_") && !line.contains("JMP") {
+            return (instructions, line_idx);
+        }
+
+        instructions.push(Instruction::from_str(line).unwrap())
+    }
+
+    return (instructions, label_instructions.len() - 1);
 }
