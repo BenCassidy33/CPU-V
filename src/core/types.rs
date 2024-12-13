@@ -2,9 +2,15 @@ use std::{fmt, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub enum Section {
-    Program(Option<Vec<Instruction>>),
+    Program(ProgramLabel),
     Data(Option<Variable>),
     Env,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProgramLabel {
+    pub label_name: String,
+    pub instructions: Option<Vec<Instruction>>,
 }
 
 pub mod DataTypes {
