@@ -21,6 +21,10 @@ pub fn parse_file(file: String) -> Program {
 
             match section_name {
                 ".data:" => {
+                    println!("Found data");
+                    let (variables, s) = parse_variables(&f[line_num + 1..]);
+                    program.data = variables;
+                    skip = s;
                     continue;
                 }
 
@@ -58,13 +62,12 @@ pub fn parse_file(file: String) -> Program {
         }
     }
 
-    println!("{:#?}", program);
-
     return program;
 }
 
 pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
     let mut instructions: Vec<Instruction> = Vec::new();
+    //println!("{:?}", label_instructions);
 
     for (line_idx, line) in label_instructions.iter().enumerate() {
         if line.is_empty() {
@@ -79,4 +82,27 @@ pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
     }
 
     return (instructions, label_instructions.len() - 1);
+}
+
+pub fn parse_variables(variable_label: &[&str]) -> (Vec<Variable>, usize) {
+    let mut variables: Vec<Variable> = Vec::new();
+
+    for (line_idx, line) in variable_label.iter().enumerate() {
+        if line.is_empty() {
+            continue;
+        }
+
+        let var_info = line.trim().splitn(3, " ").collect::<Vec<&str>>();
+        if line.contains(".section") {
+            return (variables, line_idx);
+        }
+
+        variables.push(Variable {
+            ty: DataType::from_str(var_info[0]).unwrap(),
+            name: var_info[1].to_string(),
+            value: var_info[2].to_string(),
+        })
+    }
+
+    return (variables, variable_label.len());
 }

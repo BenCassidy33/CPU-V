@@ -3,6 +3,7 @@
 mod core;
 
 use crate::core::parser::parse_file;
+use core::engine::{Engine, EngineOptions};
 use std::{env, fs, io::Read};
 
 fn main() {
@@ -14,5 +15,9 @@ fn main() {
         }
     }
 
-    parse_file(file_buf);
+    let program = parse_file(file_buf);
+    println!("{:#?}", program);
+
+    let options = EngineOptions::default();
+    let engine = Engine::new(options, program);
 }

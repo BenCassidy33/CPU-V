@@ -1,8 +1,10 @@
 use std::{fmt, str::FromStr};
 
+use egui::TextBuffer;
+
 #[derive(Debug)]
 pub struct Program {
-    pub data: Option<Data>,
+    pub data: Vec<Variable>,
     pub labels: Option<Vec<Label>>,
     pub env: Option<Env>,
 }
@@ -10,7 +12,7 @@ pub struct Program {
 impl Program {
     pub fn new() -> Self {
         return Program {
-            data: None,
+            data: Vec::new(),
             labels: None,
             env: None,
         };
@@ -34,7 +36,7 @@ pub struct Label {
     pub instructions: Option<Vec<Instruction>>,
 }
 
-pub mod DataTypes {
+pub mod DataSizes {
     pub type Byte = u8;
     pub type SByte = i8;
     pub type Word = u16;
@@ -56,22 +58,51 @@ pub mod DataTypes {
 
 #[derive(Debug, Clone)]
 pub enum DataType {
-    Byte(DataTypes::Byte),
-    SByte(DataTypes::SByte),
-    Word(DataTypes::Word),
-    SWord(DataTypes::SWord),
-    DWord(DataTypes::DWord),
-    SDWord(DataTypes::SDWord),
-    QWord(DataTypes::QWord),
-    TByte(DataTypes::TByte),
-    Real4(DataTypes::Real4),
-    Real8(DataTypes::Real8),
-    Str4(DataTypes::Str4),
-    Str8(DataTypes::Str8),
-    Str16(DataTypes::Str16),
-    Str32(DataTypes::Str32),
-    Str64(DataTypes::Str64),
-    Str128(DataTypes::Str128),
+    Byte(DataSizes::Byte),
+    SByte(DataSizes::SByte),
+    Word(DataSizes::Word),
+    SWord(DataSizes::SWord),
+    DWord(DataSizes::DWord),
+    SDWord(DataSizes::SDWord),
+    QWord(DataSizes::QWord),
+    TByte(DataSizes::TByte),
+    Real4(DataSizes::Real4),
+    Real8(DataSizes::Real8),
+    Str4(DataSizes::Str4),
+    Str8(DataSizes::Str8),
+    Str16(DataSizes::Str16),
+    Str32(DataSizes::Str32),
+    Str64(DataSizes::Str64),
+    Str128(DataSizes::Str128),
+}
+
+#[derive(Debug, Clone)]
+pub struct DataTypeInfo {}
+
+impl FromStr for DataType {
+    type Err = String;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        match input.to_lowercase().as_str() {
+            "byte" => Ok(DataType::Byte(0)),
+            "sbyte" => Ok(DataType::SByte(0)),
+            "word" => Ok(DataType::Word(0)),
+            "sword" => Ok(DataType::SWord(0)),
+            "dword" => Ok(DataType::DWord(0)),
+            "sdword" => Ok(DataType::SDWord(0)),
+            "qword" => Ok(DataType::QWord(0)),
+            "tbyte" => Ok(DataType::TByte([0; 10])),
+            "real4" => Ok(DataType::Real4(0.0)),
+            "real8" => Ok(DataType::Real8(0.0)),
+            "str4" => Ok(DataType::Str4([' '; 4])),
+            "str8" => Ok(DataType::Str8([' '; 8])),
+            "str16" => Ok(DataType::Str16([' '; 16])),
+            "str32" => Ok(DataType::Str32([' '; 32])),
+            "str64" => Ok(DataType::Str64([' '; 64])),
+            "str128" => Ok(DataType::Str128([' '; 128])),
+            _ => Err(format!("Invalid DataType string: {}", input)),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -81,9 +112,9 @@ pub enum SectionError {
 
 #[derive(Debug, Clone)]
 pub struct Variable {
-    name: String,
-    ty: DataType,
-    value: DataType,
+    pub name: String,
+    pub ty: DataType,
+    pub value: String, // TODO: Make sure that type matches value
 }
 
 #[derive(Debug, Clone)]
@@ -327,63 +358,63 @@ impl FromStr for InstructionType {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "LDA" => Ok(InstructionType::LDA),
-            "LDX" => Ok(InstructionType::LDX),
-            "LDY" => Ok(InstructionType::LDY),
-            "STA" => Ok(InstructionType::STA),
-            "STX" => Ok(InstructionType::STX),
-            "STY" => Ok(InstructionType::STY),
-            "TAX" => Ok(InstructionType::TAX),
-            "TAY" => Ok(InstructionType::TAY),
-            "TXA" => Ok(InstructionType::TXA),
-            "TYA" => Ok(InstructionType::TYA),
-            "TSX" => Ok(InstructionType::TSX),
-            "TXS" => Ok(InstructionType::TXS),
-            "PHA" => Ok(InstructionType::PHA),
-            "PHP" => Ok(InstructionType::PHP),
-            "PLA" => Ok(InstructionType::PLA),
-            "PLP" => Ok(InstructionType::PLP),
-            "AND" => Ok(InstructionType::AND),
-            "EOR" => Ok(InstructionType::EOR),
-            "ORA" => Ok(InstructionType::ORA),
-            "BIT" => Ok(InstructionType::BIT),
-            "ADC" => Ok(InstructionType::ADC),
-            "SBC" => Ok(InstructionType::SBC),
-            "CMP" => Ok(InstructionType::CMP),
-            "CPX" => Ok(InstructionType::CPX),
-            "CPY" => Ok(InstructionType::CPY),
-            "INC" => Ok(InstructionType::INC),
-            "INX" => Ok(InstructionType::INX),
-            "INY" => Ok(InstructionType::INY),
-            "DEC" => Ok(InstructionType::DEC),
-            "DEX" => Ok(InstructionType::DEX),
-            "DEY" => Ok(InstructionType::DEY),
-            "ASL" => Ok(InstructionType::ASL),
-            "LSR" => Ok(InstructionType::LSR),
-            "ROL" => Ok(InstructionType::ROL),
-            "ROR" => Ok(InstructionType::ROR),
-            "JMP" => Ok(InstructionType::JMP),
-            "JSR" => Ok(InstructionType::JSR),
-            "RTS" => Ok(InstructionType::RTS),
-            "BCC" => Ok(InstructionType::BCC),
-            "BCS" => Ok(InstructionType::BCS),
-            "BEQ" => Ok(InstructionType::BEQ),
-            "BMI" => Ok(InstructionType::BMI),
-            "BNE" => Ok(InstructionType::BNE),
-            "BPL" => Ok(InstructionType::BPL),
-            "BVC" => Ok(InstructionType::BVC),
-            "BVS" => Ok(InstructionType::BVS),
-            "CLC" => Ok(InstructionType::CLC),
-            "CLD" => Ok(InstructionType::CLD),
-            "CLI" => Ok(InstructionType::CLI),
-            "CLV" => Ok(InstructionType::CLV),
-            "SEC" => Ok(InstructionType::SEC),
-            "SED" => Ok(InstructionType::SED),
-            "SEI" => Ok(InstructionType::SEI),
-            "BRK" => Ok(InstructionType::BRK),
-            "NOP" => Ok(InstructionType::NOP),
-            "RTI" => Ok(InstructionType::RTI),
+        match s.to_lowercase().as_str() {
+            "lda" => Ok(InstructionType::LDA),
+            "ldx" => Ok(InstructionType::LDX),
+            "ldy" => Ok(InstructionType::LDY),
+            "sta" => Ok(InstructionType::STA),
+            "stx" => Ok(InstructionType::STX),
+            "sty" => Ok(InstructionType::STY),
+            "tax" => Ok(InstructionType::TAX),
+            "tay" => Ok(InstructionType::TAY),
+            "txa" => Ok(InstructionType::TXA),
+            "tya" => Ok(InstructionType::TYA),
+            "tsx" => Ok(InstructionType::TSX),
+            "txs" => Ok(InstructionType::TXS),
+            "pha" => Ok(InstructionType::PHA),
+            "php" => Ok(InstructionType::PHP),
+            "pla" => Ok(InstructionType::PLA),
+            "plp" => Ok(InstructionType::PLP),
+            "and" => Ok(InstructionType::AND),
+            "eor" => Ok(InstructionType::EOR),
+            "ora" => Ok(InstructionType::ORA),
+            "bit" => Ok(InstructionType::BIT),
+            "adc" => Ok(InstructionType::ADC),
+            "sbc" => Ok(InstructionType::SBC),
+            "cmp" => Ok(InstructionType::CMP),
+            "cpx" => Ok(InstructionType::CPX),
+            "cpy" => Ok(InstructionType::CPY),
+            "inc" => Ok(InstructionType::INC),
+            "inx" => Ok(InstructionType::INX),
+            "iny" => Ok(InstructionType::INY),
+            "dec" => Ok(InstructionType::DEC),
+            "dex" => Ok(InstructionType::DEX),
+            "dey" => Ok(InstructionType::DEY),
+            "asl" => Ok(InstructionType::ASL),
+            "lsr" => Ok(InstructionType::LSR),
+            "rol" => Ok(InstructionType::ROL),
+            "ror" => Ok(InstructionType::ROR),
+            "jmp" => Ok(InstructionType::JMP),
+            "jsr" => Ok(InstructionType::JSR),
+            "rts" => Ok(InstructionType::RTS),
+            "bcc" => Ok(InstructionType::BCC),
+            "bcs" => Ok(InstructionType::BCS),
+            "beq" => Ok(InstructionType::BEQ),
+            "bmi" => Ok(InstructionType::BMI),
+            "bne" => Ok(InstructionType::BNE),
+            "bpl" => Ok(InstructionType::BPL),
+            "bvc" => Ok(InstructionType::BVC),
+            "bvs" => Ok(InstructionType::BVS),
+            "clc" => Ok(InstructionType::CLC),
+            "cld" => Ok(InstructionType::CLD),
+            "cli" => Ok(InstructionType::CLI),
+            "clv" => Ok(InstructionType::CLV),
+            "sec" => Ok(InstructionType::SEC),
+            "sed" => Ok(InstructionType::SED),
+            "sei" => Ok(InstructionType::SEI),
+            "brk" => Ok(InstructionType::BRK),
+            "nop" => Ok(InstructionType::NOP),
+            "rti" => Ok(InstructionType::RTI),
             _ => Err(format!("Unknown instruction: {}", s)),
         }
     }

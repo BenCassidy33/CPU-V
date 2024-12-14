@@ -1,31 +1,73 @@
 use std::sync::mpsc;
 use std::thread;
 
-pub struct Engine {
-    /// the amount time the engine pauses between steps
-    pub step_time: usize,
-    /// The amount of steps that the program takes per interval of time (step_time)
-    pub steps_per_interval: usize,
-    // TODO: change this to send the correct data
-    pub client_receiver: mpsc::Receiver<EngineData>,
-    pub client_sender: mpsc::Sender<ClientData>,
+use super::types::{self, Program};
 
-    step: usize,
-    // TODO: change this to send the correct data
-    engine_receiver: mpsc::Receiver<ClientData>,
-    engine_sender: mpsc::Sender<EngineData>,
+pub struct EngineOptions {
+    /// the amount time the engine pauses between steps (counted in ms)
+    pub tick_time: usize,
+    /// The amount of steps that the program takes per interval of time (step_time)
+    pub steps_per_tick: usize,
+    /// Determines how many times engine data will be sent to the client per tick;
+    pub data_updates_per_tick: usize,
 }
 
 /// Data sent to the engine, typically settings
-pub struct ClientData {}
+pub struct ClientOptions {}
 
 /// Data sent to the client about the engine and its state
 pub struct EngineData {
-    pub cpu_data: CPU,
-    pub step: usize,
-    pub step_time: usize,
-    pub steps_per_interval: usize,
-    pub steps_per_second: usize,
+    pub tick: usize,
+    pub tick_time: usize,
+    pub steps_per_tick: usize,
+    pub ticks_per_second: usize,
 }
 
-pub struct CPU {}
+impl Default for EngineOptions {
+    fn default() -> Self {
+        return Self {
+            tick_time: 100,
+            steps_per_tick: 1,
+            data_updates_per_tick: 1,
+        };
+    }
+}
+
+pub struct Engine {
+    options: EngineOptions,
+    program: Program,
+
+    pub tick: usize,
+    line: usize,
+
+    pub engine_data_receiver: mpsc::Receiver<EngineData>,
+    client_data_sender: mpsc::Sender<EngineData>,
+
+    pub client_options_sender: mpsc::Sender<ClientOptions>,
+    client_options_receiver: mpsc::Receiver<ClientOptions>,
+}
+
+impl Engine {
+    pub fn new(options: EngineOptions, program: Program) -> Self {
+        let (eng_sender, eng_recv) = mpsc::channel::<EngineData>();
+        let (opt_sender, opt_recv) = mpsc::channel::<ClientOptions>();
+
+        return Self {
+            options,
+            program,
+
+            line: 0,
+            tick: 0,
+            engine_data_receiver: eng_recv,
+            client_options_sender: opt_sender,
+            client_options_receiver: opt_recv,
+            client_data_sender: eng_sender,
+        };
+    }
+
+    pub fn start() {}
+    pub fn pause() {}
+    pub fn stop() {}
+
+    pub fn start_tick() {}
+}
