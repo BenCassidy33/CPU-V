@@ -21,7 +21,6 @@ pub fn parse_file(file: String) -> Program {
 
             match section_name {
                 ".data:" => {
-                    println!("Found data");
                     let (variables, s) = parse_variables(&f[line_num + 1..]);
                     program.data = variables;
                     skip = s;

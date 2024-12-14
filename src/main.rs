@@ -16,8 +16,11 @@ fn main() {
     }
 
     let program = parse_file(file_buf);
-    println!("{:#?}", program);
-
-    let options = EngineOptions::default();
+    let mut options = EngineOptions::default();
+    options.ticks_per_second = 500;
+    options.time_between_reports = 5000;
+    options.lines_per_tick = 50;
     let engine = Engine::new(options, program);
+
+    engine.start()
 }
