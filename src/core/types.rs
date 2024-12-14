@@ -462,3 +462,94 @@ impl FromStr for Instruction {
         });
     }
 }
+
+#[derive(Default)]
+pub struct Registers {
+    /// 64 bit registers
+    rax: u64, // accumulator
+    rbx: u64, // base register
+    rcx: u64,
+    rsp: u64,
+    rbp: u64,
+    rdi: u64,
+    rsi: u64,
+    rdx: u64,
+
+    /// 32 bit registers
+    eax: u32,
+    ebx: u32,
+    ecx: u32,
+    esp: u32,
+    ebp: u32,
+    edi: u32,
+    esi: u32,
+    edx: u32,
+
+    /// 16 bit registers
+    ax: u16,
+    bx: u16,
+    cx: u16,
+    sp: u16,
+    bp: u16,
+    di: u16,
+    si: u16,
+    dx: u16,
+
+    /// 8 bit registers
+    ah: u8,
+    al: u8,
+    bh: u8,
+    bl: u8,
+    ch: u8,
+    cl: u8,
+    spl: u8,
+    bpl: u8,
+    dil: u8,
+    sil: u8,
+    dh: u8,
+    dl: u8,
+
+    /// 64 bit signed registers
+    srax: i64, // accumulator
+    srbx: i64, // base register
+    srcx: i64,
+    srsp: i64,
+    srbp: i64,
+    srdi: i64,
+    srsi: i64,
+    srdx: i64,
+
+    /// 32 bit signed registers
+    seax: i32,
+    sebx: i32,
+    secx: i32,
+    sesp: i32,
+    sebp: i32,
+    sedi: i32,
+    sesi: i32,
+    sedx: i32,
+
+    /// 16 bit signed registers
+    sax: i16,
+    sbx: i16,
+    scx: i16,
+    ssp: i16,
+    sbp: i16,
+    sdi: i16,
+    ssi: i16,
+    sdx: i16,
+
+    /// 8 bit signed registers
+    sah: i8,
+    sal: i8,
+    sbh: i8,
+    sbl: i8,
+    sch: i8,
+    scl: i8,
+    sspl: i8,
+    sbpl: i8,
+    sdil: i8,
+    ssil: i8,
+    sdh: i8,
+    sdl: i8,
+}
