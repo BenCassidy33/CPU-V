@@ -161,9 +161,7 @@ impl Engine {
     pub fn run_client_commands(&mut self, client_commands: ClientCommands) {
         match client_commands {
             ClientCommands::Pause => self.engine_running_state = EngineRunningState::Paused,
-
             ClientCommands::Start => self.engine_running_state = EngineRunningState::Running,
-
             ClientCommands::Stop => self.engine_running_state = EngineRunningState::Stoppped,
 
             ClientCommands::StepForward => {

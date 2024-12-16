@@ -1,12 +1,15 @@
 #![allow(warnings, unused)]
 
 mod core;
+mod ui;
 
 use crate::core::parser::parse_file;
 use core::engine::{Engine, EngineOptions};
 use std::{env, fs, io::Read};
 
 fn main() {
+    env_logger::init();
+
     let mut file_buf: String = String::new();
 
     for arg in env::args() {
@@ -16,11 +19,15 @@ fn main() {
     }
 
     let program = parse_file(file_buf);
-    let mut options = EngineOptions::default();
-    options.ticks_per_second = 500;
-    options.time_between_reports = 5000;
-    options.lines_per_tick = 50;
-    let engine = Engine::new(options, program);
 
-    engine.start()
+    let options = EngineOptions {
+        ticks_per_second: 500,
+        time_between_reports: 5000,
+        lines_per_tick: 50,
+        ..Default::default()
+    };
+
+    let mut engine = Engine::new(options, program);
+    ui::window::init(engine.engine_data_receiver, engine.client_command_sender);
+    engine.start();
 }
