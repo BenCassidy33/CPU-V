@@ -1,4 +1,5 @@
 use core::time;
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::Instant;
 use std::{os::unix::thread::JoinHandleExt, sync::mpsc};
@@ -18,6 +19,7 @@ pub struct EngineOptions {
 }
 
 /// Data sent to the engine, typically settings
+#[derive(Clone, Debug)]
 pub enum ClientCommands {
     Start,
     Stop,
@@ -62,22 +64,24 @@ pub enum EngineRunningState {
 pub struct Engine {
     pub tick: usize,
     pub engine_running_state: EngineRunningState,
-    /// Handler for the client to recieve data from the engine
-    pub engine_data_receiver: mpsc::Receiver<EngineData>,
-    /// Handler for the engine to recieve commands from the client
-    pub client_command_sender: mpsc::Sender<ClientCommands>,
+    pub options: EngineOptions,
 
     line: usize,
-    /// handler for the engine to send data to the client
-    engine_data_sender: mpsc::Sender<EngineData>,
-    /// Handler for the client to send commands to the engine
-    client_command_receiver: mpsc::Receiver<ClientCommands>,
-
     registers: Registers,
-    options: EngineOptions,
     program: Program,
-
     label: Option<Label>,
+
+    pub tick_data: EngineTickData,
+    pub client_commands: Option<Vec<ClientCommands>>,
+
+    condvar: Arc<(Mutex<bool>, Condvar)>,
+}
+
+#[derive(Debug)]
+pub struct EngineTickData {
+    // commands and info that were ran and generated on the last tick
+    pub last_client_commands: Option<Vec<ClientCommands>>,
+    pub last_generated_report: Option<EngineData>,
 }
 
 impl Engine {
@@ -95,67 +99,43 @@ impl Engine {
             line: 0,
             tick: 0,
 
-            /// Handler for the client to recieve data from the engine
-            engine_data_receiver: eng_recv,
-            /// Handler for the client to send commands to the engine
-            client_command_sender: opt_sender,
-            /// Handler for the engine to recieve commands from the client
-            client_command_receiver: opt_recv,
-            /// handler for the engine to send data to the client
-            engine_data_sender: eng_sender,
+            tick_data: EngineTickData {
+                last_client_commands: None,
+                last_generated_report: None,
+            },
+
+            client_commands: None,
+
+            condvar: Arc::new((Mutex::new(true), Condvar::new())),
         };
     }
 
-    /// Just a pretty function to start the main_loop
-    pub fn start(mut self) {
-        self.engine_running_state = EngineRunningState::Running;
-        self.main_loop().join().unwrap();
-    }
-
-    fn main_loop(mut self) -> JoinHandle<()> {
+    // TODO: Update this so that it works for running tick by tick
+    pub fn run_simulation_tick(&mut self) {
+        println!("Engine is Running!");
         let mut tick = 0;
 
         let mut start_tick = 0;
         let mut start_tick_time = Instant::now();
         let mut avg_ticks = 0;
 
-        return thread::spawn(move || loop {
-            let start_time = Instant::now();
+        let start_time = Instant::now();
+        let end_time = Instant::now();
+        let dt = end_time - start_time;
 
-            //println!(
-            //    "Running!\n{:#?},\n time between ticks: {:#?}",
-            //    self.options,
-            //    time::Duration::from_secs(self.options.ticks_per_second as u64)
-            //);
+        if ((end_time - start_tick_time).as_millis() >= self.options.time_between_reports) {
+            avg_ticks = (tick - start_tick) / (Instant::now() - start_tick_time).as_secs();
+            start_tick_time = Instant::now();
+            start_tick = tick;
 
-            if let Ok(client_commands) = self.client_command_receiver.try_recv() {
-                self.run_client_commands(client_commands);
-            };
+            self.generate_report(tick, dt, avg_ticks);
+        }
 
-            let end_time = Instant::now();
-            let dt = end_time - start_time;
+        if self.engine_running_state == EngineRunningState::Running {
+            if tick.checked_rem(self.options.lines_per_tick.try_into().unwrap()) == Some(0) {}
 
-            if ((end_time - start_tick_time).as_millis() >= self.options.time_between_reports) {
-                avg_ticks = (tick - start_tick) / (Instant::now() - start_tick_time).as_secs();
-                start_tick_time = Instant::now();
-                start_tick = tick;
-                let report = self.generate_report(tick, dt, avg_ticks);
-                println!("{:#?}", report);
-                self.engine_data_sender.send(report);
-            }
-
-            if self.engine_running_state == EngineRunningState::Running {
-                if tick.checked_rem(self.options.lines_per_tick.try_into().unwrap()) == Some(0) {
-                    self.step_tick();
-                }
-
-                tick += 1
-            };
-
-            thread::sleep(time::Duration::from_millis(
-                1000 / self.options.ticks_per_second as u64,
-            ));
-        });
+            tick += 1
+        };
     }
 
     pub fn run_client_commands(&mut self, client_commands: ClientCommands) {
@@ -181,12 +161,22 @@ impl Engine {
     pub fn step_back_tick(&mut self) {}
     pub fn update(&mut self) {}
 
-    pub fn generate_report(&self, tick: u64, dt: time::Duration, avg_ticks: u64) -> EngineData {
-        return EngineData {
-            tick,
-            last_tick_time: dt.as_millis(),
-            lines_per_tick: self.options.lines_per_tick,
-            estimated_ticks_per_second: avg_ticks,
+    pub fn generate_report(&mut self, tick: u64, dt: time::Duration, avg_ticks: u64) {
+        self.tick_data = EngineTickData {
+            last_generated_report: Some(EngineData {
+                tick,
+                last_tick_time: dt.as_millis(),
+                lines_per_tick: self.options.lines_per_tick,
+                estimated_ticks_per_second: avg_ticks,
+            }),
+
+            last_client_commands: self.client_commands.clone(),
         };
+
+        self.client_commands = None;
+    }
+
+    pub fn get_generated_engine_report(&self) -> &EngineTickData {
+        return &self.tick_data;
     }
 }
