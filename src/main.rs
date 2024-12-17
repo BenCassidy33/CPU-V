@@ -3,15 +3,16 @@
 mod core;
 mod ui;
 
-use crate::core::parser::parse_file;
 use core::engine::{Engine, EngineOptions};
-use std::thread;
 use std::time::Duration;
 use std::{
     env, fs,
     io::Read,
     sync::{Arc, Mutex},
 };
+use std::{thread, time};
+
+use crate::core::parser::parse_file;
 
 fn main() {
     env_logger::init();
@@ -27,28 +28,21 @@ fn main() {
     let program = parse_file(file_buf);
 
     let options = EngineOptions {
-        ticks_per_second: 5,
-        time_between_reports: 5000,
-        lines_per_tick: 50,
-        ..Default::default()
+        memory_size: 2048,
+        ticks_per_second: 1,
     };
 
-    let mut engine = Engine::new(options, program);
+    let mut data_records: Arc<Mutex<Vec<core::engine::EngineData>>> =
+        Arc::new(Mutex::new(Vec::new()));
 
-    let engine_thread = thread::spawn(move || loop {
-        engine.run_simulation_tick();
-        let report = engine.get_generated_engine_report();
-        println!("{:#?}", report);
+    let (engine, engine_data_reciever, client_command_sender) = Engine::new(options);
 
-        thread::sleep(Duration::from_millis(
-            1000 / engine.options.ticks_per_second as u64,
-        ));
+    let main_thread = thread::spawn(move || loop {
+        if let Ok(data) = engine_data_reciever.try_recv() {
+            let mut records = data_records.lock().unwrap();
+            records.push(data);
+        }
     });
 
-    //ui::window::init(
-    //    engine.engine_data_receiver,
-    //    engine.client_command_sender.clone(),
-    //);
-
-    engine_thread.join().unwrap()
+    engine.start();
 }
