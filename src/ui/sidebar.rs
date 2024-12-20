@@ -16,12 +16,8 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
         return;
     }
 
-    if let Ok(data) = app.data_recv.try_recv() {
-        app.previous_data = data;
-    }
-
     let window_size = ctx.screen_rect().max;
-    let side_pannel = egui::SidePanel::left("Engine Data")
+    let side_pannel = egui::SidePanel::right("Engine Data")
         .min_width(window_size.x * 0.15)
         .resizable(true)
         .show(ctx, |ui| {
@@ -63,11 +59,8 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
         });
 }
 
-pub fn show_engine_controls(app: &mut UiApp, ctx: &egui::Context) {}
-
 pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, serde_json::Value>) {
-    let ignored_entries: Vec<&str> = Vec::from(["program"]);
-
+    let ignored_entries: Vec<&str> = Vec::from(["program", "IR Repserentation", "Parsing Result"]);
     let column_width = ui.available_width() / 2.0;
 
     TableBuilder::new(ui)

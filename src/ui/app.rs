@@ -20,8 +20,6 @@ pub struct UiApp {
     file_path: Option<String>,
 
     pub code: String,
-
-    pub parser_result: String,
 }
 
 impl UiApp {
@@ -37,7 +35,6 @@ impl UiApp {
             code: "".to_string(),
             file_dialog: FileDialog::new(),
             file_path: None,
-            parser_result: "".to_string(),
         };
     }
 
@@ -69,7 +66,6 @@ impl UiApp {
             self.file_path = Some(path.to_string_lossy().to_string());
 
             if let Ok(file) = std::fs::read_to_string(path) {
-                println!("reading file");
                 self.code = file;
             }
         }
@@ -79,6 +75,9 @@ impl UiApp {
 impl eframe::App for UiApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         ctx.request_repaint_after(Duration::from_millis(1000 / FPS));
+        if let Ok(data) = self.data_recv.try_recv() {
+            self.previous_data = data;
+        }
 
         sidebar::render(self, ctx);
         text_editor::render(self, ctx);
