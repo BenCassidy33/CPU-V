@@ -20,6 +20,10 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
                             command_type: ClientCommandType::Start,
                             payload: Some(app.code.clone()),
                         });
+
+                        if let Ok(data) = app.data_recv.recv() {
+                            app.parser_result = data.program;
+                        }
                     };
 
                     if ui.add(Button::new("Stop")).clicked() {
@@ -42,7 +46,6 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 
             // text editor
             ui.vertical(|ui| {
-                println!("Code: {:?}", app.parser_result);
                 //ui.set_height(available_height * 0.8);
                 ui.horizontal(|ui| {
                     app.show_file_picker(ctx, ui);

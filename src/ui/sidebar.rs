@@ -1,7 +1,6 @@
 use egui::RichText;
 use egui_extras::{Column, TableBuilder};
 use std::collections::BTreeMap;
-use structmap::ToMap;
 
 use super::app::UiApp;
 use crate::core::engine::EngineData;
@@ -41,36 +40,41 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
                 })
             });
 
-            ui.add_space(10.0);
+            ui.add_space(50.0);
+
+            //ui.vertical(|ui| {
+            //    ui.set_height(available_height * 0.4);
+            //    ui.heading(RichText::new("Engine Controls").size(36.0).strong())
+            //});
 
             ui.vertical(|ui| {
-                ui.set_height(available_height * 0.4);
-                ui.heading(RichText::new("Engine Controls").size(36.0).strong())
-            });
-
-            ui.add_space(10.0);
-
-            ui.vertical(|ui| {
-                ui.set_height(available_height * 0.5);
+                //ui.set_height(available_height * 0.5);
                 ui.heading(RichText::new("Engine Data").size(36.0).strong());
 
-                ui.add_space(available_height * 0.02);
-
-                show_engine_data_table(ui, EngineData::to_stringmap(app.previous_data.clone()));
+                ui.add_space(20.0);
+                show_engine_data_table(
+                    ui,
+                    serde_json::from_value::<BTreeMap<String, serde_json::Value>>(
+                        serde_json::to_value(&app.previous_data).unwrap(),
+                    )
+                    .unwrap(),
+                );
             });
         });
 }
 
 pub fn show_engine_controls(app: &mut UiApp, ctx: &egui::Context) {}
 
-pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, String>) {
+pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, serde_json::Value>) {
+    let ignored_entries: Vec<&str> = Vec::from(["program"]);
+
     let column_width = ui.available_width() / 2.0;
 
     TableBuilder::new(ui)
         .striped(true)
         .column(Column::exact(column_width).resizable(true))
         .column(Column::remainder())
-        .header(80.0, |mut header| {
+        .header(40.0, |mut header| {
             header.col(|ui| {
                 ui.heading("Key");
             });
@@ -81,13 +85,24 @@ pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, String>)
         })
         .body(|mut body| {
             for (key, val) in data.iter() {
+                if ignored_entries.contains(&&(*key.as_str())) {
+                    continue;
+                }
+
                 body.row(30.0, |mut row| {
                     row.col(|ui| {
                         ui.label(key);
                     });
 
                     row.col(|ui| {
-                        ui.label(val);
+                        ui.label(match val {
+                            serde_json::Value::Number(n) => format!("{:?}", n.as_u64().unwrap()),
+                            serde_json::Value::Null => "Null".to_string(),
+                            serde_json::Value::Bool(n) => format!("{:?}", n.to_string()),
+                            serde_json::Value::String(n) => format!("{:?}", n),
+                            serde_json::Value::Array(n) => format!("{:?}", n),
+                            serde_json::Value::Object(n) => format!("{:?}", n),
+                        });
                     });
                 })
             }

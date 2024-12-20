@@ -1,9 +1,6 @@
 use egui_code_editor::{ColorTheme, Syntax};
 use egui_file_dialog::FileDialog;
-use std::{
-    sync::mpsc,
-    time::Duration,
-};
+use std::{sync::mpsc, time::Duration};
 
 use egui::Ui;
 

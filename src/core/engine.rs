@@ -1,9 +1,9 @@
+use std::fmt::{self, Display};
 use std::sync::mpsc;
 use std::thread::{self};
 use std::time::{self, Duration};
 
-use structmap::ToMap;
-use structmap_derive::ToMap;
+use serde::{Deserialize, Serialize};
 
 use super::parser::parse_input;
 use super::types::{Program, Registers};
@@ -26,10 +26,11 @@ pub struct EngineState {
     running_state: EngineRunningState,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Default, Debug, Serialize, Deserialize)]
 pub enum EngineRunningState {
-    Running,
+    #[default]
     Stopped,
+    Running,
     Paused,
 }
 
@@ -38,9 +39,13 @@ pub struct EngineOptions {
     pub ticks_per_second: usize,
 }
 
-#[derive(Debug, ToMap, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EngineData {
-    tick: usize,
+    #[serde(rename = "Tick")]
+    pub tick: usize,
+    #[serde(rename = "Current State")]
+    pub engine_running_state: EngineRunningState,
+    pub program: String,
 }
 
 pub struct ClientCommands {
@@ -86,6 +91,14 @@ impl Engine {
         return (engine, data_recv, client_send);
     }
 
+    pub fn get_current_state(&self) -> EngineData {
+        return EngineData {
+            tick: self.state.tick,
+            engine_running_state: self.state.running_state.clone(),
+            program: format!("{:#?}", self.program).to_string(),
+        };
+    }
+
     fn send_error(error_msg: String) {
         todo!("Need to implmient sending errors")
     }
@@ -110,15 +123,18 @@ impl Engine {
                             self.state.instruction_ptr = 0;
                             self.state.running_state = EngineRunningState::Running;
                             self.program = Some(parse_input(client_command.payload.unwrap()));
+                            self.engine_data_sender.send(self.get_current_state());
                         } else {
                             self.state.running_state = EngineRunningState::Running;
                         }
                     }
                     ClientCommandType::Pause => {
-                        self.state.running_state = EngineRunningState::Paused
+                        self.state.running_state = EngineRunningState::Paused;
+                        self.engine_data_sender.send(self.get_current_state());
                     }
                     ClientCommandType::Stop => {
-                        self.state.running_state = EngineRunningState::Stopped
+                        self.state.running_state = EngineRunningState::Stopped;
+                        self.engine_data_sender.send(self.get_current_state());
                     }
                 }
             }
@@ -129,6 +145,8 @@ impl Engine {
 
             let send_result = self.engine_data_sender.send(EngineData {
                 tick: self.state.tick,
+                program: "".to_string(),
+                engine_running_state: self.state.running_state.clone(),
             });
 
             self.state.tick += 1;
