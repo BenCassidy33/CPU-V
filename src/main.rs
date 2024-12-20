@@ -1,4 +1,5 @@
 #![allow(warnings, unused)]
+#![feature(deadline_api)]
 
 mod core;
 mod ui;
@@ -13,6 +14,8 @@ use std::{
 use std::{thread, time};
 
 use crate::core::parser::parse_file;
+
+const FPS: u64 = 60;
 
 fn main() {
     env_logger::init();
@@ -37,12 +40,9 @@ fn main() {
 
     let (engine, engine_data_reciever, client_command_sender) = Engine::new(options);
 
-    let main_thread = thread::spawn(move || loop {
-        if let Ok(data) = engine_data_reciever.try_recv() {
-            let mut records = data_records.lock().unwrap();
-            records.push(data);
-        }
+    thread::spawn(move || {
+        engine.start();
     });
 
-    engine.start();
+    ui::window::init(engine_data_reciever, client_command_sender);
 }
