@@ -1,19 +1,15 @@
-use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
+use egui_code_editor::{ColorTheme, Syntax};
 use egui_file_dialog::FileDialog;
 use std::{
-    default,
-    ffi::OsStr,
-    path::{Path, PathBuf},
     sync::mpsc,
-    thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
 
-use egui::{CentralPanel, Ui};
+use egui::Ui;
 
 use super::{sidebar, text_editor};
 use crate::{
-    core::engine::{ClientCommandType, ClientCommands, EngineData},
+    core::engine::{ClientCommands, EngineData},
     FPS,
 };
 

@@ -1,17 +1,11 @@
-//#![allow(warnings, unused)]
+#![allow(warnings, unused)]
 #![feature(deadline_api)]
 
 mod core;
 mod ui;
 
 use core::engine::{Engine, EngineOptions};
-use std::time::Duration;
-use std::{
-    env, fs,
-    io::Read,
-    sync::{Arc, Mutex},
-};
-use std::{thread, time};
+use std::thread;
 
 const FPS: u64 = 60;
 

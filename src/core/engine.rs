@@ -1,12 +1,12 @@
-use std::sync::{mpsc, Arc, Mutex};
-use std::thread::{self, JoinHandle};
+use std::sync::mpsc;
+use std::thread::{self};
 use std::time::{self, Duration};
 
-use structmap::{FromMap, ToMap};
-use structmap_derive::{FromMap, ToMap};
+use structmap::ToMap;
+use structmap_derive::ToMap;
 
 use super::parser::parse_input;
-use super::types::{self, Label, Program, Registers};
+use super::types::{Program, Registers};
 
 pub struct Engine {
     program: Option<Program>,

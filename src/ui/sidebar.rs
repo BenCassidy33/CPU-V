@@ -1,14 +1,10 @@
-use eframe::App;
-use egui::{Area, Id, RichText, Vec2, Window};
-use egui_extras::{Column, Table, TableBuilder};
+use egui::RichText;
+use egui_extras::{Column, TableBuilder};
 use std::collections::BTreeMap;
-use std::time::Duration;
 use structmap::ToMap;
 
 use super::app::UiApp;
-use super::window::WINDOW_WIDTH;
-use crate::core::engine::{Engine, EngineData};
-use crate::FPS;
+use crate::core::engine::EngineData;
 
 //use eframe::egui::Ui;
 

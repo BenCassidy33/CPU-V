@@ -1,9 +1,7 @@
 use eframe::egui;
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::{fmt::format, sync::mpsc};
+use std::sync::mpsc;
 
-use crate::core::engine::{ClientCommandType, ClientCommands, EngineData};
+use crate::core::engine::{ClientCommands, EngineData};
 use crate::ui::app::UiApp;
 
 pub const WINDOW_WIDTH: f32 = 2560.0;

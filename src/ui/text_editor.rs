@@ -1,9 +1,4 @@
-use egui::{Button, Ui};
-use egui_code_editor::{CodeEditor, ColorTheme, Syntax};
-use std::{
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
+use egui::Button;
 
 use super::app::UiApp;
 use crate::core::engine::{ClientCommandType, ClientCommands};
@@ -47,6 +42,7 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 
             // text editor
             ui.vertical(|ui| {
+                println!("Code: {:?}", app.parser_result);
                 //ui.set_height(available_height * 0.8);
                 ui.horizontal(|ui| {
                     app.show_file_picker(ctx, ui);
