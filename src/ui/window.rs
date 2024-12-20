@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::{fmt::format, sync::mpsc};
 
-use super::widgets::render_info_and_controls;
 use crate::core::engine::{ClientCommands, EngineData};
 use crate::ui::app::UiApp;
 

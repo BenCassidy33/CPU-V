@@ -1,3 +1,4 @@
 pub mod app;
-pub mod widgets;
+pub mod sidebar;
+pub mod text_editor;
 pub mod window;

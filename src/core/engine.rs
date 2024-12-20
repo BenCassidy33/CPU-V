@@ -32,7 +32,11 @@ pub struct EngineOptions {
 pub struct EngineData {
     tick: usize,
 }
-pub struct ClientCommands {}
+pub enum ClientCommands {
+    Start,
+    Stop,
+    Pause,
+}
 
 impl Engine {
     pub fn new(

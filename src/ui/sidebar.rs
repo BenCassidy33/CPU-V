@@ -1,5 +1,5 @@
 use eframe::App;
-use egui::{Area, Id, RichText, Ui, Vec2, Window};
+use egui::{Area, Id, RichText, Vec2, Window};
 use egui_extras::{Column, Table, TableBuilder};
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -10,7 +10,9 @@ use super::window::WINDOW_WIDTH;
 use crate::core::engine::{Engine, EngineData};
 use crate::FPS;
 
-pub fn render_info_and_controls(app: &mut UiApp, ctx: &egui::Context) {
+//use eframe::egui::Ui;
+
+pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     if ctx.input(|i| i.key_pressed(egui::Key::P)) {
         app.sidebar_shown = true;
     }
@@ -65,7 +67,7 @@ pub fn render_info_and_controls(app: &mut UiApp, ctx: &egui::Context) {
 
 pub fn show_engine_controls(app: &mut UiApp, ctx: &egui::Context) {}
 
-pub fn show_engine_data_table(ui: &mut Ui, data: BTreeMap<String, String>) {
+pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, String>) {
     let column_width = ui.available_width() / 2.0;
 
     TableBuilder::new(ui)
@@ -74,22 +76,22 @@ pub fn show_engine_data_table(ui: &mut Ui, data: BTreeMap<String, String>) {
         .column(Column::remainder())
         .header(80.0, |mut header| {
             header.col(|ui| {
-                ui.heading(RichText::new("Key").size(32.0).strong());
+                ui.heading("Key");
             });
 
             header.col(|ui| {
-                ui.heading(RichText::new("Value").size(32.0).strong());
+                ui.heading("Value");
             });
         })
         .body(|mut body| {
             for (key, val) in data.iter() {
                 body.row(30.0, |mut row| {
                     row.col(|ui| {
-                        ui.label(RichText::new(key).size(24.0));
+                        ui.label(key);
                     });
 
                     row.col(|ui| {
-                        ui.label(RichText::new(val).size(24.0));
+                        ui.label(val);
                     });
                 })
             }
