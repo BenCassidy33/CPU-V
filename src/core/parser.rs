@@ -4,7 +4,7 @@ use crate::core::types::*;
 use std::str::FromStr;
 
 // TODO: add in label and data parsing
-pub fn parse_file(file: String) -> Program {
+pub fn parse_input(file: String) -> Program {
     let mut program = Program::new();
     let f = file.split("\n").collect::<Vec<&str>>();
 

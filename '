@@ -5,7 +5,7 @@ use std::time::{self, Duration};
 use structmap::{FromMap, ToMap};
 use structmap_derive::{FromMap, ToMap};
 
-use super::parser::parse_input;
+use super::parser::parse_file;
 use super::types::{self, Label, Program, Registers};
 
 pub struct Engine {
@@ -94,14 +94,26 @@ impl Engine {
         if input.is_empty() && self.program.is_none() {
             Self::send_error("Can not run program with an empty file!".to_string());
         }
-        self.program = Some(parse_input(input));
+        self.program = Some(parse_file(input));
         self.run();
     }
 
     pub fn run(mut self) {
         let start_time = time::Instant::now();
+        println!("Running! Parsing Result: {:?}", self.program);
 
         loop {
+            //println!(
+            //    "Engine is on Tick: {} (Running at {}tps) [{:?}]",
+            //    self.state.tick,
+            //    self.options.ticks_per_second,
+            //    start_time.elapsed()
+            //);
+
+            if self.state.running_state != EngineRunningState::Running {
+                continue;
+            }
+
             if let Ok(client_command) = self.client_command_reciever.try_recv() {
                 match client_command.command_type {
                     ClientCommandType::Start => {
@@ -109,7 +121,6 @@ impl Engine {
                             self.state.tick = 0;
                             self.state.instruction_ptr = 0;
                             self.state.running_state = EngineRunningState::Running;
-                            self.program = Some(parse_input(client_command.payload.unwrap()));
                         } else {
                             self.state.running_state = EngineRunningState::Running;
                         }
@@ -121,10 +132,6 @@ impl Engine {
                         self.state.running_state = EngineRunningState::Stopped
                     }
                 }
-            }
-
-            if self.state.running_state != EngineRunningState::Running {
-                continue;
             }
 
             let send_result = self.engine_data_sender.send(EngineData {

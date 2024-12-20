@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::{fmt::format, sync::mpsc};
 
-use crate::core::engine::{ClientCommands, EngineData};
+use crate::core::engine::{ClientCommandType, ClientCommands, EngineData};
 use crate::ui::app::UiApp;
 
 pub const WINDOW_WIDTH: f32 = 2560.0;
@@ -11,7 +11,7 @@ pub const WINDOW_HEIGHT: f32 = 1440.0;
 
 pub fn init(
     engine_data_recv: mpsc::Receiver<EngineData>,
-    client_command_sender: mpsc::Sender<Vec<ClientCommands>>,
+    client_command_sender: mpsc::Sender<ClientCommands>,
 ) -> eframe::Result {
     let opts = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([WINDOW_WIDTH, WINDOW_HEIGHT]),

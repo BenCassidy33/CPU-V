@@ -13,26 +13,28 @@ use egui::{CentralPanel, Ui};
 
 use super::{sidebar, text_editor};
 use crate::{
-    core::engine::{ClientCommands, EngineData},
+    core::engine::{ClientCommandType, ClientCommands, EngineData},
     FPS,
 };
 
 pub struct UiApp {
     pub data_recv: mpsc::Receiver<EngineData>,
-    pub command_sender: mpsc::Sender<Vec<ClientCommands>>,
+    pub command_sender: mpsc::Sender<ClientCommands>,
     pub previous_data: EngineData,
     pub sidebar_shown: bool,
 
     file_dialog: FileDialog,
     file_path: Option<String>,
 
-    code: String,
+    pub code: String,
+
+    pub parser_result: String,
 }
 
 impl UiApp {
     pub fn new(
         data_recv: mpsc::Receiver<EngineData>,
-        command_sender: mpsc::Sender<Vec<ClientCommands>>,
+        command_sender: mpsc::Sender<ClientCommands>,
     ) -> Self {
         return Self {
             data_recv,
@@ -42,6 +44,7 @@ impl UiApp {
             code: "".to_string(),
             file_dialog: FileDialog::new(),
             file_path: None,
+            parser_result: "".to_string(),
         };
     }
 
