@@ -1,5 +1,4 @@
 #![allow(warnings, unused)]
-#![feature(deadline_api)]
 
 mod core;
 mod ui;
