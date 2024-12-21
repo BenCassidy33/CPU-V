@@ -42,8 +42,16 @@ impl UiApp {
             code: "".to_string(),
             file_dialog: FileDialog::new(),
             file_path: None,
-            system_logs: Vec::new(),
-            stdout: Vec::new(),
+            system_logs: Vec::from(vec![format!(
+                "\n{}\n{}\n\n",
+                "This is where logs made by the system will be found.\n",
+                "=".repeat(50)
+            )]),
+            stdout: Vec::from(vec![format!(
+                "\n{}\n{}\n\n",
+                "This is where calls to stdout will be found\n",
+                "=".repeat(50)
+            )]),
         };
     }
 

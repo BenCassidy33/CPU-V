@@ -20,24 +20,24 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
         .show(ctx, |ui| {
             ui.set_height(ui.available_height() * 0.2);
             ui.horizontal(|ui| {
-                ui.set_width(ui.available_width() * 0.5);
-                let system_logs = egui::TextEdit::multiline(&mut app.system_logs.join("\n"))
-                    .desired_rows(10)
-                    .desired_width(ui.available_width())
-                    .clip_text(true)
-                    .interactive(false)
-                    .show(ui);
+                ui.vertical(|ui| {
+                    ui.set_width(ui.available_width() * 0.5);
+                    let system_logs = egui::TextEdit::multiline(&mut app.system_logs.join("\n"))
+                        .desired_rows(10)
+                        .desired_width(ui.available_width())
+                        .clip_text(true)
+                        .interactive(false)
+                        .show(ui);
+                });
+
+                ui.vertical(|ui| {
+                    let stdout = egui::TextEdit::multiline(&mut app.stdout.join("\n"))
+                        .desired_rows(10)
+                        .desired_width(ui.available_width())
+                        .clip_text(true)
+                        .interactive(false)
+                        .show(ui);
+                })
             });
-
-            ui.horizontal(|ui| {
-                ui.set_width(ui.available_width() * 0.5);
-
-                let stdout = egui::TextEdit::multiline(&mut app.stdout.join("\n"))
-                    .desired_rows(10)
-                    .desired_width(ui.available_width())
-                    .clip_text(true)
-                    .interactive(false)
-                    .show(ui);
-            })
         });
 }
