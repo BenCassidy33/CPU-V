@@ -4,12 +4,13 @@ use std::thread::{self};
 use std::time::{self, Duration};
 
 use eframe::run_simple_native;
+use egui::TextBuffer;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
 use crate::core::lang::{parse_input, Label, Program, Registers};
 
-use super::runner::run_instruction;
+use super::runner::{run_instruction, InstructionExecutionError};
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
@@ -34,16 +35,15 @@ pub struct Engine {
     client_command_reciever: mpsc::Receiver<ClientCommands>,
     stdout_sender: mpsc::Sender<StdLogMessage>,
 
-    options: EngineOptions,
-    state: EngineState,
+    pub options: EngineOptions,
+    pub state: EngineState,
 
     pub current_label: Option<Label>,
-    pub label_instruction_pointer: usize,
 }
 
 pub struct EngineState {
-    tick: usize,
-    instruction_ptr: usize,
+    pub tick: usize,
+    pub instruction_ptr: usize,
     running_state: EngineRunningState,
 }
 
@@ -156,8 +156,6 @@ impl Engine {
                 instruction_ptr: 0,
                 running_state: EngineRunningState::Stopped,
             },
-
-            label_instruction_pointer: 0,
         };
 
         return (engine, client_send, data_recv, log_recv);
@@ -194,7 +192,6 @@ impl Engine {
 
         loop {
             if let Ok(client_command) = self.client_command_reciever.try_recv() {
-                println!("Client Command Called! {:#?}", client_command);
                 self.run_client_commands(client_command);
             }
 
@@ -202,11 +199,29 @@ impl Engine {
                 continue;
             }
 
+            // THIS NEEDS TO STAY HERE FOR THIS TO WORK!!!
             let send_result = self.engine_data_sender.send(self.get_current_state(None));
 
-            //let ptr = self.label_instruction_pointer;
-            //run_instruction(&mut self);
-            //self.label_instruction_pointer += 1;
+            let instruction_execution_result = run_instruction(&mut self);
+            match instruction_execution_result {
+                Err(e) => {
+                    if e != InstructionExecutionError::EndOfLabel {
+                        self.state.running_state = EngineRunningState::Stopped;
+                        self.send_stdlog(
+                            StdLogLevel::ERROR,
+                            format!("Instruction Failed! {:?}", e).as_str(),
+                        );
+                    } else {
+                        self.state.running_state = EngineRunningState::Stopped;
+                        self.send_stdlog(
+                            StdLogLevel::INFO,
+                            format!("Program Exited With Success!").as_str(),
+                        );
+                    }
+                }
+
+                _ => {}
+            }
 
             self.state.tick += 1;
             thread::sleep(Duration::from_millis(
@@ -229,12 +244,6 @@ impl Engine {
                     let send_res = self
                         .engine_data_sender
                         .send(self.get_current_state(Some(ClientCommandType::Start)));
-                    println!(
-                        "Sending Result: {:#?}, Program: {:?}",
-                        send_res,
-                        self.get_current_state(Some(ClientCommandType::Start))
-                            .program
-                    );
                 } else {
                     self.state.running_state = EngineRunningState::Running;
                 }

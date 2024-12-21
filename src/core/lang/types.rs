@@ -179,7 +179,6 @@ impl FromStr for InstructionType {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        //println!("{:?}", s);
         match s.to_lowercase().as_str() {
             "call" => Ok(InstructionType::CALL),
             "load" => Ok(InstructionType::LOAD),

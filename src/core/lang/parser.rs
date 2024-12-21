@@ -47,7 +47,7 @@ pub fn parse_input(file: String) -> Program {
             continue;
         }
 
-        if line.contains("@") && !line.contains("JMP") {
+        if line.contains("@") && !has_jump(&line) {
             let label = line.trim();
             let result = parse_label(&f[line_num + 1..]);
 
@@ -67,6 +67,13 @@ pub fn parse_input(file: String) -> Program {
     }
 
     return program;
+}
+
+pub fn has_jump(line: &&str) -> bool {
+    return line.contains("JMP")
+        || line.contains("JEQ")
+        || line.contains("JLT")
+        || line.contains("JGT");
 }
 
 pub fn parse_extern(label_functions: &[&str]) -> (Vec<String>, usize) {
@@ -95,7 +102,7 @@ pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
             continue;
         }
 
-        if line.contains("@") && !line.contains("JMP") {
+        if line.contains("@") && !has_jump(line) {
             return (instructions, line_idx);
         }
 
