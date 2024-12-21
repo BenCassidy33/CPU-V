@@ -3,15 +3,21 @@
 mod core;
 mod ui;
 
-use core::engine::{Engine, EngineOptions};
+use core::{
+    engine::{Engine, EngineOptions},
+    lang::parse_input,
+};
 use std::thread;
 
 const FPS: u64 = 60;
 
 //pub const POINTER_ARROW: &str = "↓";
+//pub const DEFAULT_FILE: &str = "./test_file.cpu";
 
 fn main() {
     env_logger::init();
+
+    //let test_file = std::fs::read_to_string(DEFAULT_FILE).unwrap();
 
     let options = EngineOptions {
         memory_size: 2048,

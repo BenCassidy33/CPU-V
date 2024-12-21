@@ -5,18 +5,30 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct Program {
+    pub extern_functions: Option<Vec<String>>,
     pub data: Vec<Variable>,
     pub labels: Option<Vec<Label>>,
-    pub env: Option<Env>,
+    //pub env: Option<Env>,
 }
 
 impl Program {
     pub fn new() -> Self {
         return Program {
+            extern_functions: None,
             data: Vec::new(),
             labels: None,
-            env: None,
+            //env: None,
         };
+    }
+
+    pub fn get_start_label(&self) -> Result<Label, ()> {
+        for label in self.labels.as_ref().unwrap() {
+            if label.label_name.contains("start") {
+                return Ok(label.clone());
+            }
+        }
+
+        return Err(());
     }
 }
 
@@ -24,12 +36,6 @@ impl Program {
 pub struct Data {}
 #[derive(Debug)]
 pub struct Env {}
-
-//#[derive(Debug, Clone)]
-//pub enum Section {
-//    Program(Option<Vec<Label>>),
-//    Data(Option<Variable>),
-//    Env,
 
 #[derive(Debug, Clone)]
 pub struct Label {
@@ -122,7 +128,6 @@ pub struct Variable {
 pub struct Instruction {
     pub ty: InstructionType,
     pub val: InstructionValue,
-    pub flags: Vec<Flag>,
 }
 
 #[derive(Debug, Clone)]
@@ -133,204 +138,28 @@ enum InstructionValue {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum InstructionType {
-    // Load/Store Operations
-    LDA, // Sets: N, Z
-    LDX, // Sets: N, Z
-    LDY, // Sets: N, Z
-    STA,
-    STX,
-    STY,
+    CALL,
 
-    // Register Transfers. All set N, Z
-    TAX,
-    TAY,
-    TXA,
-    TYA,
-    TSX,
-    TXS,
-
-    // Stack Operations
-    PHA, // Sets: N, Z
-    PHP,
-    PLA, // Sets: N, Z
-    PLP, // Sets: ALL
-
-    // Logical Operations. All set N, Z except BIT
-    AND,
-    EOR,
-    ORA,
-    BIT, // Sets: N, V, Z
-
-    // Arithmetic. All set N, Z, C except ADC & SBC
-    ADC, // Sets: N, V, Z, C
-    SBC, // Sets: N, V, Z, C
-    CMP,
-    CPX,
-    CPY,
-
-    // Inc and Dec. All set N, Z
+    LOAD,
+    MOVE,
     INC,
-    INX,
-    INY,
     DEC,
-    DEX,
-    DEY,
 
-    // Shifts. All set N, Z, C
-    ASL,
-    LSR,
-    ROL,
-    ROR,
+    ADD,
+    SUB,
 
-    // Jumps and Calls. None set
-    JMP,
+    CMP,
     JEQ,
-    JNE,
-    JSR,
-    RTS,
+    JLT,
+    JGT,
+    JMP,
 
-    // Branches. None set
-    BCC,
-    BCS,
-    BEQ,
-    BMI,
-    BNE,
-    BPL,
-    BVC,
-    BVS,
-
-    // Status Flag Changes
-    CLC, // Clears C
-    CLD, // Clears D
-    CLI, // Clears I
-    CLV, // Clears V
-    SEC, // Sets C
-    SED, // Sets D
-    SEI, // Sets I
-
-    // System Functions
-    BRK, // Sets B
     NOP,
-    RTI, // Sets All
-
-    // Custom
-    CAL, // Creates a funtion call to the os, Sets Interrupt
-    MOV, // Moves one value into another eg. mov from, to, Sets Interrupt
-}
-
-#[derive(Debug, Clone)]
-pub enum Flag {
-    Zero,  // set if the result of the last operation was 0
-    Carry, // set if the last operation caused an overflow from bit 7 or an
-    // underflow from bit 0
-    Interrupt, // set if the program has executed a 'set interrupt disable'
-    // instruction
-    Decimal,  // while set, cpu follows the rules of the Binary Coded Decimal
-    Break,    // set when a break instruction is executed
-    Overflow, // set if a math operation has overflowed the registers
-    // eg. 64 + 64  = -128
-    Negative, // set if the last operation set the 7th bit to a 1
+    BRK,
+    EXIT,
 }
 
 impl InstructionType {
-    pub fn flags(&self) -> Vec<Flag> {
-        return match self {
-            // Load/Store Operations
-            InstructionType::LDA | InstructionType::LDX | InstructionType::LDY => {
-                vec![Flag::Negative, Flag::Zero]
-            }
-            InstructionType::STA | InstructionType::STX | InstructionType::STY => vec![],
-
-            // Register Transfers. All set N, Z
-            InstructionType::TAX
-            | InstructionType::TAY
-            | InstructionType::TXA
-            | InstructionType::TYA
-            | InstructionType::TSX
-            | InstructionType::TXS => vec![Flag::Negative, Flag::Zero],
-
-            // Stack Operations
-            InstructionType::PHA | InstructionType::PLA => vec![Flag::Negative, Flag::Zero],
-            InstructionType::PHP => vec![],
-            InstructionType::PLP => vec![
-                Flag::Zero,
-                Flag::Carry,
-                Flag::Interrupt,
-                Flag::Decimal,
-                Flag::Break,
-                Flag::Overflow,
-                Flag::Negative,
-            ],
-
-            // Logical Operations
-            InstructionType::AND | InstructionType::EOR | InstructionType::ORA => {
-                vec![Flag::Negative, Flag::Zero]
-            }
-            InstructionType::BIT => vec![Flag::Negative, Flag::Overflow, Flag::Zero],
-
-            // Arithmetic
-            InstructionType::ADC | InstructionType::SBC => {
-                vec![Flag::Negative, Flag::Overflow, Flag::Zero, Flag::Carry]
-            }
-            InstructionType::CMP | InstructionType::CPX | InstructionType::CPY => {
-                vec![Flag::Negative, Flag::Zero, Flag::Carry]
-            }
-
-            // Inc and Dec
-            InstructionType::INC
-            | InstructionType::INX
-            | InstructionType::INY
-            | InstructionType::DEC
-            | InstructionType::DEX
-            | InstructionType::DEY => vec![Flag::Negative, Flag::Zero],
-
-            // Shifts
-            InstructionType::ASL
-            | InstructionType::LSR
-            | InstructionType::ROL
-            | InstructionType::ROR => vec![Flag::Negative, Flag::Zero, Flag::Carry],
-
-            // Jumps and Calls
-            InstructionType::JMP | InstructionType::JSR | InstructionType::RTS => vec![],
-
-            // Branches
-            InstructionType::BCC
-            | InstructionType::BCS
-            | InstructionType::BEQ
-            | InstructionType::BMI
-            | InstructionType::BNE
-            | InstructionType::BPL
-            | InstructionType::BVC
-            | InstructionType::BVS
-            | InstructionType::JEQ
-            | InstructionType::JNE => vec![],
-
-            // Status Flag Changes
-            InstructionType::CLC | InstructionType::SEC => vec![Flag::Carry],
-            InstructionType::CLD | InstructionType::SED => vec![Flag::Decimal],
-            InstructionType::CLI
-            | InstructionType::SEI
-            | InstructionType::CAL
-            | InstructionType::MOV => {
-                vec![Flag::Interrupt]
-            }
-            InstructionType::CLV => vec![Flag::Overflow],
-
-            // System Functions
-            InstructionType::BRK => vec![Flag::Break],
-            InstructionType::NOP => vec![],
-            InstructionType::RTI => vec![
-                Flag::Zero,
-                Flag::Carry,
-                Flag::Interrupt,
-                Flag::Decimal,
-                Flag::Break,
-                Flag::Overflow,
-                Flag::Negative,
-            ],
-        };
-    }
-
     pub fn has_multiple_values(&self) -> bool {
         return match self {
             Self::JMP => true,
@@ -340,16 +169,7 @@ impl InstructionType {
 
     pub fn is_valueless(&self) -> bool {
         return match self {
-            Self::TAX
-            | Self::TAY
-            | Self::TXA
-            | Self::TYA
-            | Self::TSX
-            | Self::TXS
-            | Self::PHA
-            | Self::PHP
-            | Self::PLA
-            | Self::PLP => true,
+            Self::NOP => true,
             _ => false,
         };
     }
@@ -359,63 +179,23 @@ impl FromStr for InstructionType {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        //println!("{:?}", s);
         match s.to_lowercase().as_str() {
-            "lda" => Ok(InstructionType::LDA),
-            "ldx" => Ok(InstructionType::LDX),
-            "ldy" => Ok(InstructionType::LDY),
-            "sta" => Ok(InstructionType::STA),
-            "stx" => Ok(InstructionType::STX),
-            "sty" => Ok(InstructionType::STY),
-            "tax" => Ok(InstructionType::TAX),
-            "tay" => Ok(InstructionType::TAY),
-            "txa" => Ok(InstructionType::TXA),
-            "tya" => Ok(InstructionType::TYA),
-            "tsx" => Ok(InstructionType::TSX),
-            "txs" => Ok(InstructionType::TXS),
-            "pha" => Ok(InstructionType::PHA),
-            "php" => Ok(InstructionType::PHP),
-            "pla" => Ok(InstructionType::PLA),
-            "plp" => Ok(InstructionType::PLP),
-            "and" => Ok(InstructionType::AND),
-            "eor" => Ok(InstructionType::EOR),
-            "ora" => Ok(InstructionType::ORA),
-            "bit" => Ok(InstructionType::BIT),
-            "adc" => Ok(InstructionType::ADC),
-            "sbc" => Ok(InstructionType::SBC),
-            "cmp" => Ok(InstructionType::CMP),
-            "cpx" => Ok(InstructionType::CPX),
-            "cpy" => Ok(InstructionType::CPY),
+            "call" => Ok(InstructionType::CALL),
+            "load" => Ok(InstructionType::LOAD),
+            "move" => Ok(InstructionType::MOVE),
             "inc" => Ok(InstructionType::INC),
-            "inx" => Ok(InstructionType::INX),
-            "iny" => Ok(InstructionType::INY),
             "dec" => Ok(InstructionType::DEC),
-            "dex" => Ok(InstructionType::DEX),
-            "dey" => Ok(InstructionType::DEY),
-            "asl" => Ok(InstructionType::ASL),
-            "lsr" => Ok(InstructionType::LSR),
-            "rol" => Ok(InstructionType::ROL),
-            "ror" => Ok(InstructionType::ROR),
+            "add" => Ok(InstructionType::ADD),
+            "sub" => Ok(InstructionType::SUB),
+            "cmp" => Ok(InstructionType::CMP),
+            "jeq" => Ok(InstructionType::JEQ),
+            "jlt" => Ok(InstructionType::JLT),
+            "jgt" => Ok(InstructionType::JGT),
             "jmp" => Ok(InstructionType::JMP),
-            "jsr" => Ok(InstructionType::JSR),
-            "rts" => Ok(InstructionType::RTS),
-            "bcc" => Ok(InstructionType::BCC),
-            "bcs" => Ok(InstructionType::BCS),
-            "beq" => Ok(InstructionType::BEQ),
-            "bmi" => Ok(InstructionType::BMI),
-            "bne" => Ok(InstructionType::BNE),
-            "bpl" => Ok(InstructionType::BPL),
-            "bvc" => Ok(InstructionType::BVC),
-            "bvs" => Ok(InstructionType::BVS),
-            "clc" => Ok(InstructionType::CLC),
-            "cld" => Ok(InstructionType::CLD),
-            "cli" => Ok(InstructionType::CLI),
-            "clv" => Ok(InstructionType::CLV),
-            "sec" => Ok(InstructionType::SEC),
-            "sed" => Ok(InstructionType::SED),
-            "sei" => Ok(InstructionType::SEI),
-            "brk" => Ok(InstructionType::BRK),
             "nop" => Ok(InstructionType::NOP),
-            "rti" => Ok(InstructionType::RTI),
+            "brk" => Ok(InstructionType::BRK),
+            "exit" => Ok(InstructionType::EXIT),
             _ => Err(format!("Unknown instruction: {}", s)),
         }
     }
@@ -450,7 +230,6 @@ impl FromStr for Instruction {
         }
 
         return Ok(Self {
-            flags: ty.flags(),
             ty,
             val: match values {
                 Some(val) => {
@@ -464,7 +243,7 @@ impl FromStr for Instruction {
     }
 }
 
-#[derive(Default, Clone, Serialize, Deserialize, Debug)]
+#[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct Registers {
     /// 64 bit registers
     pub rax: u64, // accumulator

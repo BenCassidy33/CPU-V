@@ -25,13 +25,20 @@ pub fn parse_input(file: String) -> Program {
                     continue;
                 }
 
+                ".extern" => {
+                    let (functions, s) = parse_extern(&f[line_num + 1..]);
+                    program.extern_functions = Some(functions);
+                    skip = s;
+                    continue;
+                }
+
                 ".program:" => {
                     continue;
                 }
 
                 _ => {
                     panic!(
-                        "Invalid Section Name: \"{}\"!. Perhaps you were trying to create a _label?",
+                        "Invalid Section Name: \"{}\"!. Perhaps you were trying to create a @label?",
                         section_name
                     )
                 }
@@ -62,6 +69,24 @@ pub fn parse_input(file: String) -> Program {
     return program;
 }
 
+pub fn parse_extern(label_functions: &[&str]) -> (Vec<String>, usize) {
+    let mut functions: Vec<String> = Vec::new();
+
+    for (line_idx, line) in label_functions.iter().enumerate() {
+        if line.is_empty() {
+            continue;
+        }
+
+        if line.contains(".section") {
+            return (functions, line_idx);
+        }
+
+        functions.push(line.trim().to_string());
+    }
+
+    return (functions, label_functions.len() - 1);
+}
+
 pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
     let mut instructions: Vec<Instruction> = Vec::new();
 
@@ -71,6 +96,10 @@ pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
         }
 
         if line.contains("@") && !line.contains("JMP") {
+            return (instructions, line_idx);
+        }
+
+        if line.contains(".section") {
             return (instructions, line_idx);
         }
 

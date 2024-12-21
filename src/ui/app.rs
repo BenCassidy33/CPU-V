@@ -85,6 +85,7 @@ impl eframe::App for UiApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         ctx.request_repaint_after(Duration::from_millis(1000 / FPS));
         if let Ok(data) = self.data_recv.try_recv() {
+            println!("{:?}", data);
             self.previous_data = data;
         }
 

@@ -3,10 +3,13 @@ use std::sync::mpsc;
 use std::thread::{self};
 use std::time::{self, Duration};
 
+use eframe::run_simple_native;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
-use crate::core::lang::{parse_input, Program, Registers};
+use crate::core::lang::{parse_input, Label, Program, Registers};
+
+use super::runner::run_instruction;
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
@@ -23,7 +26,7 @@ impl PayloadImpl for Payload {
 }
 
 pub struct Engine {
-    program: Option<Program>,
+    pub program: Option<Program>,
     heap_memory: Vec<i8>,
     registers: Registers,
 
@@ -33,6 +36,9 @@ pub struct Engine {
 
     options: EngineOptions,
     state: EngineState,
+
+    pub current_label: Option<Label>,
+    pub label_instruction_pointer: usize,
 }
 
 pub struct EngineState {
@@ -70,7 +76,7 @@ pub struct EngineOptions {
     pub instructions_per_tick: usize,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct EngineData {
     #[serde(rename = "Tick")]
     pub tick: usize,
@@ -87,12 +93,26 @@ pub struct EngineData {
     pub registers: Registers,
 }
 
+impl Default for EngineData {
+    fn default() -> Self {
+        Self {
+            tick: Default::default(),
+            engine_running_state: Default::default(),
+            program: Default::default(),
+            ir_repsersentation: "TODO".to_string(),
+            responding_to: Default::default(),
+            registers: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct ClientCommands {
     pub command_type: ClientCommandType,
     pub payload: Payload,
 }
 
-#[derive(Debug, EnumIter, Clone, Serialize, Deserialize)]
+#[derive(Debug, EnumIter, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ClientCommandType {
     Start,
     Stop,
@@ -120,6 +140,7 @@ impl Engine {
 
         let engine = Self {
             program: None,
+            current_label: None,
             heap_memory: Vec::with_capacity(options.memory_size),
             registers: Registers {
                 ..Default::default()
@@ -135,6 +156,8 @@ impl Engine {
                 instruction_ptr: 0,
                 running_state: EngineRunningState::Stopped,
             },
+
+            label_instruction_pointer: 0,
         };
 
         return (engine, client_send, data_recv, log_recv);
@@ -163,12 +186,15 @@ impl Engine {
             .send(StdLogMessage { message, log_level });
     }
 
+    // TODO: Fix bug where parsing result is sent but overwritted when engine is not in started
+    // state
     pub fn run(mut self) {
         self.send_stdlog(StdLogLevel::INFO, "Initalizing Engine...");
         let start_time = time::Instant::now();
 
         loop {
             if let Ok(client_command) = self.client_command_reciever.try_recv() {
+                println!("Client Command Called! {:#?}", client_command);
                 self.run_client_commands(client_command);
             }
 
@@ -176,14 +202,11 @@ impl Engine {
                 continue;
             }
 
-            let send_result = self.engine_data_sender.send(EngineData {
-                tick: self.state.tick,
-                program: "".to_string(),
-                engine_running_state: self.state.running_state.clone(),
-                ir_repsersentation: "TODO".to_string(),
-                responding_to: None,
-                registers: self.registers.clone(),
-            });
+            let send_result = self.engine_data_sender.send(self.get_current_state(None));
+
+            //let ptr = self.label_instruction_pointer;
+            //run_instruction(&mut self);
+            //self.label_instruction_pointer += 1;
 
             self.state.tick += 1;
             thread::sleep(Duration::from_millis(
@@ -199,9 +222,19 @@ impl Engine {
                     self.state.tick = 0;
                     self.state.instruction_ptr = 0;
                     self.state.running_state = EngineRunningState::Running;
-                    self.program = Some(parse_input(client_command.payload.unwrap()));
-                    self.engine_data_sender
+                    let program = parse_input(client_command.payload.unwrap());
+
+                    self.current_label = program.get_start_label().ok();
+                    self.program = Some(program);
+                    let send_res = self
+                        .engine_data_sender
                         .send(self.get_current_state(Some(ClientCommandType::Start)));
+                    println!(
+                        "Sending Result: {:#?}, Program: {:?}",
+                        send_res,
+                        self.get_current_state(Some(ClientCommandType::Start))
+                            .program
+                    );
                 } else {
                     self.state.running_state = EngineRunningState::Running;
                 }
