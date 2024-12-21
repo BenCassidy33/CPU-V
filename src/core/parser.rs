@@ -1,4 +1,3 @@
-
 use crate::core::types::*;
 use std::str::FromStr;
 
@@ -41,7 +40,7 @@ pub fn parse_input(file: String) -> Program {
             continue;
         }
 
-        if line.contains("_") && !line.contains("JMP") {
+        if line.contains("@") && !line.contains("JMP") {
             let label = line.trim();
             let result = parse_label(&f[line_num + 1..]);
 
@@ -65,14 +64,13 @@ pub fn parse_input(file: String) -> Program {
 
 pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
     let mut instructions: Vec<Instruction> = Vec::new();
-    //println!("{:?}", label_instructions);
 
     for (line_idx, line) in label_instructions.iter().enumerate() {
         if line.is_empty() {
             continue;
         }
 
-        if line.contains("_") && !line.contains("JMP") {
+        if line.contains("@") && !line.contains("JMP") {
             return (instructions, line_idx);
         }
 

@@ -8,6 +8,8 @@ use std::thread;
 
 const FPS: u64 = 60;
 
+//pub const POINTER_ARROW: &str = "↓";
+
 fn main() {
     env_logger::init();
 
@@ -16,11 +18,12 @@ fn main() {
         ticks_per_second: 1,
     };
 
-    let (engine, engine_data_reciever, client_command_sender) = Engine::new(options);
+    let (engine, client_command_sender, engine_data_reciever, stdlog_reciever) =
+        Engine::new(options);
 
     thread::spawn(move || {
         engine.run();
     });
 
-    ui::window::init(engine_data_reciever, client_command_sender);
+    ui::window::init(client_command_sender, engine_data_reciever, stdlog_reciever);
 }

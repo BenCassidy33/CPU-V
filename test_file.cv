@@ -5,14 +5,14 @@
     str16 name "assembly"
 
 .section .program:
-_start:
+@start:
     LDA #10
     STA $0200
     LDA #20
     STA $0201
     JMP _jump
 
-_jump:
+@jump:
     LDA $0200
     ADC $0201
     TAX

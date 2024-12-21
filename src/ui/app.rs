@@ -4,15 +4,17 @@ use std::{sync::mpsc, time::Duration};
 
 use egui::Ui;
 
-use super::{sidebar, text_editor};
+use super::{center_pannel, sidebar, text_editor};
 use crate::{
-    core::engine::{ClientCommands, EngineData},
+    core::engine::{ClientCommands, EngineData, StdLogMessage},
     FPS,
 };
 
 pub struct UiApp {
     pub data_recv: mpsc::Receiver<EngineData>,
     pub command_sender: mpsc::Sender<ClientCommands>,
+    pub stdlog_reciever: mpsc::Receiver<StdLogMessage>,
+
     pub previous_data: EngineData,
     pub sidebar_shown: bool,
 
@@ -20,21 +22,28 @@ pub struct UiApp {
     file_path: Option<String>,
 
     pub code: String,
+
+    pub system_logs: Vec<String>,
+    pub stdout: Vec<String>,
 }
 
 impl UiApp {
     pub fn new(
-        data_recv: mpsc::Receiver<EngineData>,
         command_sender: mpsc::Sender<ClientCommands>,
+        data_recv: mpsc::Receiver<EngineData>,
+        stdlog_reciever: mpsc::Receiver<StdLogMessage>,
     ) -> Self {
         return Self {
             data_recv,
             command_sender,
+            stdlog_reciever,
             sidebar_shown: true,
             previous_data: EngineData::default(),
             code: "".to_string(),
             file_dialog: FileDialog::new(),
             file_path: None,
+            system_logs: Vec::new(),
+            stdout: Vec::new(),
         };
     }
 
@@ -81,5 +90,6 @@ impl eframe::App for UiApp {
 
         sidebar::render(self, ctx);
         text_editor::render(self, ctx);
+        center_pannel::render(self, ctx);
     }
 }

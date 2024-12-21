@@ -7,7 +7,7 @@ use crate::core::engine::{ClientCommandType, ClientCommands};
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     let window_size = ctx.screen_rect().max;
     let pannel = egui::SidePanel::left("Text Editor")
-        .min_width(window_size.x * 0.35)
+        .min_width(window_size.x * 0.2)
         .show(ctx, |ui| {
             let available_height = ui.available_height();
 

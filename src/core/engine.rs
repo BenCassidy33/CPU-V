@@ -9,6 +9,8 @@ use strum::EnumIter;
 use super::parser::parse_input;
 use super::types::{Program, Registers};
 
+const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
+
 type Payload = Option<String>;
 
 trait PayloadImpl {
@@ -28,6 +30,7 @@ pub struct Engine {
 
     engine_data_sender: mpsc::Sender<EngineData>,
     client_command_reciever: mpsc::Receiver<ClientCommands>,
+    stdout_sender: mpsc::Sender<StdLogMessage>,
 
     options: EngineOptions,
     state: EngineState,
@@ -37,6 +40,21 @@ pub struct EngineState {
     tick: usize,
     instruction_ptr: usize,
     running_state: EngineRunningState,
+}
+
+#[derive(Debug)]
+pub struct StdLogMessage {
+    pub message: String,
+    pub log_level: StdLogLevel,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum StdLogLevel {
+    INFO,
+    WARN,
+    ERROR,
+
+    UserPrint,
 }
 
 #[derive(PartialEq, Clone, Default, Debug, Serialize, Deserialize)]
@@ -90,11 +108,13 @@ impl Engine {
         options: EngineOptions,
     ) -> (
         Self,
-        mpsc::Receiver<EngineData>,
         mpsc::Sender<ClientCommands>,
+        mpsc::Receiver<EngineData>,
+        mpsc::Receiver<StdLogMessage>,
     ) {
         let (data_send, data_recv) = mpsc::channel::<EngineData>();
         let (client_send, client_recv) = mpsc::channel::<ClientCommands>();
+        let (log_send, log_recv) = mpsc::channel::<StdLogMessage>();
 
         let engine = Self {
             program: None,
@@ -106,6 +126,7 @@ impl Engine {
 
             engine_data_sender: data_send,
             client_command_reciever: client_recv,
+            stdout_sender: log_send,
 
             state: EngineState {
                 tick: 0,
@@ -114,7 +135,7 @@ impl Engine {
             },
         };
 
-        return (engine, data_recv, client_send);
+        return (engine, client_send, data_recv, log_recv);
     }
 
     pub fn get_current_state(&self, responding_to: Option<ClientCommandType>) -> EngineData {
@@ -127,19 +148,20 @@ impl Engine {
         };
     }
 
-    fn send_error(&self, error_msg: &str) {
-        todo!("Need to implmient sending errors")
-    }
-
-    pub fn start(mut self, input: String) {
-        if input.is_empty() && self.program.is_none() {
-            self.send_error("Can not run program with an empty file!");
-        }
-        self.program = Some(parse_input(input));
-        self.run();
+    fn send_stdlog(&self, log_level: StdLogLevel, message: &str) {
+        let message = format!(
+            "[{:?}] {:?} - {}",
+            log_level,
+            chrono::Local::now().format(TIME_FORMAT).to_string(),
+            message
+        );
+        let log_res = self
+            .stdout_sender
+            .send(StdLogMessage { message, log_level });
     }
 
     pub fn run(mut self) {
+        self.send_stdlog(StdLogLevel::INFO, "Initalizing Engine...");
         let start_time = time::Instant::now();
 
         loop {
@@ -206,7 +228,8 @@ impl Engine {
                 let program = parse_input(payload);
                 let mut current_state =
                     self.get_current_state(Some(ClientCommandType::ParseWithoutUpdate));
-                current_state.program = format!("{:#?}", self.program).to_string();
+
+                current_state.program = format!("{:#?}", program).to_string();
                 self.engine_data_sender.send(current_state);
             }
 
