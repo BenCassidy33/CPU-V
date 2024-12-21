@@ -16,7 +16,7 @@ fn main() {
     let options = EngineOptions {
         memory_size: 2048,
         ticks_per_second: 1,
-        instructions_per_tick 1,
+        instructions_per_tick: 1,
     };
 
     let (engine, client_command_sender, engine_data_reciever, stdlog_reciever) =
