@@ -1,0 +1,70 @@
+# All options will default if the option is not set or if the provided value is invalid.
+
+[program]
+# Specifies the path to the file the program should load on startup.
+# If the file is not found or the path is invalid, no default program will be loaded.
+program-path = "main.cpu"
+
+# Configures where parsing results should be written.
+# - `should-write`: Enables or disables writing parsing results.
+# - `path`: Specifies the file path for saving parsing results. 
+# Writing is skipped if `should-write` is false or the file path is invalid.
+output-parsing-results = { should-write = false, path = "out/parsed.ptree" }
+
+# Configures where system logs should be written.
+# - `should-write`: Enables or disables log writing.
+# - `path`: Specifies the file path for saving logs. 
+# Writing is skipped if `should-write` is false or the file path is invalid.
+output-logs = { should-write = true, path = "logs.txt" }
+
+# Defines the destination(s) for the program's standard output (stdout).
+# Options:
+# - "All": Sends output to all available destinations.
+# - "Virtual": Sends output to a simulated or virtual environment.
+# - "Console": Sends output directly to the terminal or console.
+# - "File": Sends output to a specified file.
+stdout = ["virtual"]
+
+[engine]
+# Configures how often the engine updates, measured in Ticks Per Second (TPS).  
+# - Use an integer to specify the number of ticks per second directly.  
+# - Use a fraction (e.g., 1/seconds) to configure Seconds Per Tick instead.  
+tps = 5
+
+# Defines the number of ticks required to execute a single instruction, measured as Instructions Per Tick (IPT).  
+# - Use an integer to specify the number of ticks per instruction directly.  
+# - Use a fraction (e.g., 1/ticks) to configure Ticks Per Instruction instead.  
+ipt = 1
+
+
+# Allocates the memory size (in bytes) for the engine's operations.  
+# Each byte is a signed 8-bit integer.
+heap-memory-size = 2048
+
+# Configures the engine to simulate memory access and retrieval delays on the heap.
+# - `enabled`: Enables or disables the simulation.
+# - `minimum-delay`: Specifies the minimum delay time (in ticks) for memory access simulation.
+heap-access-simulation = { enabled = true, minimum-delay = 1 }
+
+# Configures the minimum log level for the system.
+# Options:
+# - "info": Logs informational messages and above.
+# - "warn": Logs warnings and errors only.
+# - "error": Logs errors only.
+log-level = "info"
+
+
+[ui]
+# Specifies the theme for the user interface.
+# Options:
+# - "light"
+# - "dark"
+theme = "dark"
+
+# Sets the font color for all text in the user interface.
+# Use "default" for the system's default color or specify a custom color.
+font-color = "default"
+
+# Configures the font size for text in the user interface.
+# Larger texts (e.g., headings) will scale proportionally.
+font-size = 16

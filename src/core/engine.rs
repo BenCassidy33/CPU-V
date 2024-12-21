@@ -25,7 +25,7 @@ impl PayloadImpl for Payload {
 
 pub struct Engine {
     program: Option<Program>,
-    program_memory: Vec<i128>,
+    heap_memory: Vec<i8>,
     registers: Registers,
 
     engine_data_sender: mpsc::Sender<EngineData>,
@@ -68,6 +68,7 @@ pub enum EngineRunningState {
 pub struct EngineOptions {
     pub memory_size: usize,
     pub ticks_per_second: usize,
+    pub instructions_per_tick: usize,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -120,7 +121,7 @@ impl Engine {
 
         let engine = Self {
             program: None,
-            program_memory: Vec::with_capacity(options.memory_size),
+            heap_memory: Vec::with_capacity(options.memory_size),
             registers: Registers {
                 ..Default::default()
             },
