@@ -25,7 +25,7 @@ impl PayloadImpl for Payload {
 
 pub struct Engine {
     program: Option<Program>,
-    program_memory: Vec<i32>,
+    program_memory: Vec<i128>,
     registers: Registers,
 
     engine_data_sender: mpsc::Sender<EngineData>,
@@ -83,6 +83,8 @@ pub struct EngineData {
     pub ir_repsersentation: String,
 
     pub responding_to: Option<ClientCommandType>,
+
+    pub registers: Registers,
 }
 
 pub struct ClientCommands {
@@ -145,6 +147,7 @@ impl Engine {
             program: format!("{:#?}", self.program).to_string(),
             ir_repsersentation: "TODO".to_string(),
             responding_to,
+            registers: self.registers.clone(),
         };
     }
 
@@ -179,6 +182,7 @@ impl Engine {
                 engine_running_state: self.state.running_state.clone(),
                 ir_repsersentation: "TODO".to_string(),
                 responding_to: None,
+                registers: self.registers.clone(),
             });
 
             self.state.tick += 1;

@@ -1,5 +1,6 @@
 use egui::{
-    panel::TopBottomSide, Align, Area, CentralPanel, Color32, Frame, Resize, TopBottomPanel,
+    panel::TopBottomSide, Align, Area, CentralPanel, Color32, Frame, Resize, RichText,
+    TopBottomPanel,
 };
 
 use crate::core::engine::{StdLogLevel, StdLogMessage};
@@ -17,8 +18,20 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
 
     TopBottomPanel::bottom("Logs")
         .resizable(true)
+        .min_height(ui.available_height() * 0.2)
         .show(ctx, |ui| {
-            ui.set_height(ui.available_height() * 0.2);
+            ui.vertical(|ui| {
+                ui.add_space(10.0);
+                ui.label(RichText::new("Logs & Stdout").heading().strong());
+                ui.add_space(10.0);
+            });
+
+            ui.horizontal(|ui| {
+                let label = ui.label("System Logs");
+                ui.add_space(ui.available_width() * 0.481);
+                ui.label("Stdout");
+            });
+
             ui.horizontal(|ui| {
                 ui.vertical(|ui| {
                     ui.set_width(ui.available_width() * 0.5);

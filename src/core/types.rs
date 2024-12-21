@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use egui::TextBuffer;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct Program {
@@ -463,7 +464,7 @@ impl FromStr for Instruction {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct Registers {
     /// 64 bit registers
     pub rax: u64, // accumulator

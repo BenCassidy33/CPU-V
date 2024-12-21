@@ -5,8 +5,6 @@ use std::collections::BTreeMap;
 use super::app::UiApp;
 use crate::core::engine::EngineData;
 
-//use eframe::egui::Ui;
-
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     if ctx.input(|i| i.key_pressed(egui::Key::P)) {
         app.sidebar_shown = true;
@@ -60,7 +58,12 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 }
 
 pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, serde_json::Value>) {
-    let ignored_entries: Vec<&str> = Vec::from(["program", "IR Repserentation", "Parsing Result"]);
+    let ignored_entries: Vec<&str> = Vec::from([
+        "program",
+        "IR Repserentation",
+        "Parsing Result",
+        "registers",
+    ]);
     let column_width = ui.available_width() / 2.0;
 
     TableBuilder::new(ui)
