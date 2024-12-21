@@ -6,8 +6,7 @@ use std::time::{self, Duration};
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
-use super::parser::parse_input;
-use super::types::{Program, Registers};
+use crate::core::lang::{parse_input, Program, Registers};
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 

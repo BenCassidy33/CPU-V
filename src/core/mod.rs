@@ -1,4 +1,3 @@
+pub mod IR;
 pub mod engine;
-pub mod parser;
-pub mod runner;
-pub mod types;
+pub mod lang;

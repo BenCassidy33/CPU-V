@@ -1,3 +1,3 @@
-use super::engine::Engine;
+use super::Engine;
 
 pub fn run_instruction(engine: &mut Engine) {}
