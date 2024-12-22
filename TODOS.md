@@ -5,6 +5,7 @@ General:
     - Update ui to take into account custom config options
 - Update README to be better
 - Actually add a language reference
+- Add wasm targets 
 
 Language:
 - Update types to remove weird enum values and such

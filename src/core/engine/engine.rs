@@ -3,7 +3,6 @@ use std::sync::mpsc;
 use std::thread::{self};
 use std::time::{self, Duration};
 
-use eframe::run_simple_native;
 use egui::TextBuffer;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;

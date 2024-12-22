@@ -1,3 +1,5 @@
+#![allow(clippy::mem_forget)]
+
 use eframe::egui;
 use std::sync::mpsc;
 
@@ -7,6 +9,7 @@ use crate::ui::app::UiApp;
 pub const WINDOW_WIDTH: f32 = 2560.0;
 pub const WINDOW_HEIGHT: f32 = 1440.0;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn init(
     client_command_sender: mpsc::Sender<ClientCommands>,
     engine_data_recv: mpsc::Receiver<EngineData>,

@@ -13,7 +13,6 @@ use std::{env::args, process::exit, thread};
 const FPS: u64 = 60;
 
 fn main() {
-    env_logger::init();
     let args = CliArgs::parse();
     let options = parse_config(args.config_path);
 
