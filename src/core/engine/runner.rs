@@ -1,6 +1,5 @@
 use super::Engine;
-use crate::core::lang::Instruction;
-use crate::core::lang::InstructionType;
+use crate::core::IR::{Instruction, InstructionType};
 
 #[derive(Debug)]
 pub enum InstructionExecutionSeccess {

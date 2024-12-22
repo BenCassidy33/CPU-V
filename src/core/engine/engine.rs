@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
 use super::runner::{run_instruction, InstructionExecutionError};
-use crate::core::lang::{parse_input, Label, Program, Registers};
+use crate::core::IR::{parse_input, Label, Program, Registers};
 use crate::RootConfig;
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";

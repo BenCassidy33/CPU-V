@@ -1,4 +1,4 @@
-use crate::core::lang::{DataType, Instruction, InstructionType, Label, Program, Variable};
+use crate::core::IR::{DataType, Instruction, InstructionType, Label, Program, Variable};
 use std::str::FromStr;
 
 // TODO: add in label and data parsing
