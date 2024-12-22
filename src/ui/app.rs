@@ -12,8 +12,8 @@ use crate::{
 
 #[derive(PartialEq, Debug, Default)]
 pub enum ParsingResultViewOptions {
-    #[default]
     Raw,
+    #[default]
     Tabled,
     None,
 }

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Program {
     pub extern_functions: Option<Vec<String>>,
-    pub data: Vec<Variable>,
+    pub static_variables: Vec<Variable>,
     pub labels: Option<Vec<Label>>,
 }
 
@@ -14,7 +14,7 @@ impl Program {
     pub fn new() -> Self {
         return Program {
             extern_functions: None,
-            data: Vec::new(),
+            static_variables: Vec::new(),
             labels: None,
             //env: None,
         };
@@ -122,7 +122,7 @@ pub enum SectionError {
 pub struct Variable {
     pub name: String,
     pub ty: DataType,
-    pub value: String, // TODO: Make sure that type matches value
+    pub inital_value: String, // TODO: Make sure that type matches value
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

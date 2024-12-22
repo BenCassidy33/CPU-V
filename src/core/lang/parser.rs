@@ -20,7 +20,7 @@ pub fn parse_input(file: String) -> Program {
             match section_name {
                 ".data:" => {
                     let (variables, s) = parse_variables(&f[line_num + 1..]);
-                    program.data = variables;
+                    program.static_variables = variables;
                     skip = s;
                     continue;
                 }
@@ -132,7 +132,7 @@ pub fn parse_variables(variable_label: &[&str]) -> (Vec<Variable>, usize) {
         variables.push(Variable {
             ty: DataType::from_str(var_info[0]).unwrap(),
             name: var_info[1].to_string(),
-            value: var_info[2].to_string(),
+            inital_value: var_info[2].to_string(),
         })
     }
 
