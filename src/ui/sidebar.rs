@@ -64,6 +64,7 @@ pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, serde_js
         "Parsing Result",
         "registers",
     ]);
+
     let column_width = ui.available_width() / 2.0;
 
     TableBuilder::new(ui)

@@ -1,7 +1,7 @@
-use egui::{Button, Color32, RichText, ScrollArea};
+use egui::{Button, Color32, ComboBox, RichText, ScrollArea};
 use strum::IntoEnumIterator;
 
-use super::app::UiApp;
+use super::app::{ParsingResultViewOptions, UiApp};
 use crate::core::engine::{ClientCommandType, ClientCommands};
 
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
@@ -36,26 +36,62 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 
             ui.add_space(20.0);
             ui.label(RichText::new("Parsing Results").strong().size(24.0));
+
+            ComboBox::from_label("Select Parsing Result View")
+                .selected_text(format!("{:?}", app.ui_opts.parsing_results))
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut app.ui_opts.parsing_results,
+                        ParsingResultViewOptions::Raw,
+                        "Raw",
+                    );
+                    ui.selectable_value(
+                        &mut app.ui_opts.parsing_results,
+                        ParsingResultViewOptions::Tabled,
+                        "Tabled",
+                    );
+                    ui.selectable_value(
+                        &mut app.ui_opts.parsing_results,
+                        ParsingResultViewOptions::None,
+                        "None",
+                    );
+                });
+
             ui.add_space(5.0);
 
             ui.vertical(|ui| {
-                ui.set_height(ui.available_height() * 0.25);
+                ui.set_height(ui.available_height() * 0.9);
                 ui.set_width(ui.available_width());
-                ScrollArea::vertical().show(ui, |ui| {
-                    if app.previous_data.program.split("").last() == Some(")") {
-                        app.previous_data.program.pop();
-                    }
-                    let mut data = app.previous_data.program.replace("Some(", "");
 
-                    let output = egui::TextEdit::multiline(&mut data)
-                        .desired_width(ui.available_width())
-                        .background_color(Color32::BLACK)
-                        .interactive(false)
-                        .clip_text(true)
-                        .show(ui);
-                })
+                render_parsing_results(app, ui);
             })
         });
+}
+
+pub fn render_parsing_results(app: &mut UiApp, ui: &mut egui::Ui) {
+    match app.ui_opts.parsing_results {
+        ParsingResultViewOptions::Raw => ScrollArea::vertical().show(ui, |ui| {
+            if app.previous_data.program.split("").last() == Some(")") {
+                app.previous_data.program.pop();
+            }
+            let data = app.previous_data.program.replace("Some(", "");
+            let mut trimed = data.trim();
+
+            let output = egui::TextEdit::multiline(&mut trimed)
+                .desired_rows(150)
+                .desired_width(ui.available_width())
+                .background_color(Color32::BLACK)
+                .interactive(false)
+                .clip_text(true)
+                .show(ui);
+        }),
+        ParsingResultViewOptions::Tabled => {
+            let extern_functions = &app.previous_data.program;
+            println!("{:?}", extern_functions);
+            todo!()
+        }
+        ParsingResultViewOptions::None => todo!(),
+    };
 }
 
 pub fn render_controls(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {

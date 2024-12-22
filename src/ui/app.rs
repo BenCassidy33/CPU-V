@@ -1,6 +1,6 @@
 use egui_code_editor::{ColorTheme, Syntax};
 use egui_file_dialog::FileDialog;
-use std::{sync::mpsc, time::Duration};
+use std::{default, sync::mpsc, time::Duration};
 
 use egui::Ui;
 
@@ -9,6 +9,19 @@ use crate::{
     core::engine::{ClientCommands, EngineData, StdLogMessage},
     FPS,
 };
+
+#[derive(PartialEq, Debug, Default)]
+pub enum ParsingResultViewOptions {
+    #[default]
+    Raw,
+    Tabled,
+    None,
+}
+
+#[derive(Default)]
+pub struct UiOptions {
+    pub parsing_results: ParsingResultViewOptions,
+}
 
 pub struct UiApp {
     pub data_recv: mpsc::Receiver<EngineData>,
@@ -25,6 +38,8 @@ pub struct UiApp {
 
     pub system_logs: Vec<String>,
     pub stdout: Vec<String>,
+
+    pub ui_opts: UiOptions,
 }
 
 impl UiApp {
@@ -44,6 +59,7 @@ impl UiApp {
             file_path: None,
             system_logs: Vec::from(vec!["".to_string()]),
             stdout: Vec::from(vec!["".to_string()]),
+            ui_opts: Default::default(),
         };
     }
 
