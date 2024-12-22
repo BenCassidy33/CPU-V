@@ -71,13 +71,14 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 pub fn render_parsing_results(app: &mut UiApp, ui: &mut egui::Ui) {
     match app.ui_opts.parsing_results {
         ParsingResultViewOptions::Raw => ScrollArea::vertical().show(ui, |ui| {
-            if app.previous_data.program.split("").last() == Some(")") {
-                app.previous_data.program.pop();
-            }
-            let data = app.previous_data.program.replace("Some(", "");
-            let mut trimed = data.trim();
+            let data = app.previous_data.program.clone();
 
-            let output = egui::TextEdit::multiline(&mut trimed)
+            let mut viewable = match data {
+                Some(mut data) => &mut format!("{:#?}", &mut data).to_string(),
+                None => &mut "".to_string(),
+            };
+
+            let output = egui::TextEdit::multiline(viewable)
                 .desired_rows(150)
                 .desired_width(ui.available_width())
                 .background_color(Color32::BLACK)

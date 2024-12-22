@@ -75,7 +75,7 @@ pub struct EngineData {
     #[serde(rename = "Current State")]
     pub engine_running_state: EngineRunningState,
     #[serde(rename = "Parsing Result")]
-    pub program: String,
+    pub program: Option<Program>,
     #[serde(rename = "IR Repserentation")]
     pub ir_repsersentation: String,
     pub responding_to: Option<ClientCommandType>,
@@ -155,7 +155,7 @@ impl Engine {
         return EngineData {
             tick: self.state.tick,
             engine_running_state: self.state.running_state.clone(),
-            program: format!("{:#?}", self.program).to_string(),
+            program: self.program.clone(),
             ir_repsersentation: "TODO".to_string(),
             responding_to,
             registers: self.registers.clone(),
@@ -265,7 +265,7 @@ impl Engine {
                 let mut current_state =
                     self.get_current_state(Some(ClientCommandType::ParseWithoutUpdate));
 
-                current_state.program = format!("{:#?}", program).to_string();
+                current_state.program = Some(program);
                 self.engine_data_sender.send(current_state);
             }
 

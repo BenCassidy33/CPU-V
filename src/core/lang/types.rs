@@ -3,12 +3,11 @@ use std::str::FromStr;
 use egui::TextBuffer;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Program {
     pub extern_functions: Option<Vec<String>>,
     pub data: Vec<Variable>,
     pub labels: Option<Vec<Label>>,
-    //pub env: Option<Env>,
 }
 
 impl Program {
@@ -37,12 +36,11 @@ pub struct Data {}
 #[derive(Debug)]
 pub struct Env {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Label {
     pub label_name: String,
     pub instructions: Option<Vec<Instruction>>,
 }
-
 pub mod DataSizes {
     pub type Byte = u8;
     pub type SByte = i8;
@@ -63,24 +61,27 @@ pub mod DataSizes {
     pub type Str128 = [char; 128];
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum DataType {
-    Byte(DataSizes::Byte),
-    SByte(DataSizes::SByte),
-    Word(DataSizes::Word),
-    SWord(DataSizes::SWord),
-    DWord(DataSizes::DWord),
-    SDWord(DataSizes::SDWord),
-    QWord(DataSizes::QWord),
-    TByte(DataSizes::TByte),
-    Real4(DataSizes::Real4),
-    Real8(DataSizes::Real8),
-    Str4(DataSizes::Str4),
-    Str8(DataSizes::Str8),
-    Str16(DataSizes::Str16),
-    Str32(DataSizes::Str32),
-    Str64(DataSizes::Str64),
-    Str128(DataSizes::Str128),
+    Byte,
+    SByte,
+    TByte,
+
+    Word,
+    SWord,
+    DWord,
+    SDWord,
+    QWord,
+
+    Real4,
+    Real8,
+
+    Str4,
+    Str8,
+    Str16,
+    Str32,
+    Str64,
+    Str128,
 }
 
 #[derive(Debug, Clone)]
@@ -91,22 +92,22 @@ impl FromStr for DataType {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         match input.to_lowercase().as_str() {
-            "byte" => Ok(DataType::Byte(0)),
-            "sbyte" => Ok(DataType::SByte(0)),
-            "word" => Ok(DataType::Word(0)),
-            "sword" => Ok(DataType::SWord(0)),
-            "dword" => Ok(DataType::DWord(0)),
-            "sdword" => Ok(DataType::SDWord(0)),
-            "qword" => Ok(DataType::QWord(0)),
-            "tbyte" => Ok(DataType::TByte([0; 10])),
-            "real4" => Ok(DataType::Real4(0.0)),
-            "real8" => Ok(DataType::Real8(0.0)),
-            "str4" => Ok(DataType::Str4([' '; 4])),
-            "str8" => Ok(DataType::Str8([' '; 8])),
-            "str16" => Ok(DataType::Str16([' '; 16])),
-            "str32" => Ok(DataType::Str32([' '; 32])),
-            "str64" => Ok(DataType::Str64([' '; 64])),
-            "str128" => Ok(DataType::Str128([' '; 128])),
+            "byte" => Ok(DataType::Byte),
+            "sbyte" => Ok(DataType::SByte),
+            "word" => Ok(DataType::Word),
+            "sword" => Ok(DataType::SWord),
+            "dword" => Ok(DataType::DWord),
+            "sdword" => Ok(DataType::SDWord),
+            "qword" => Ok(DataType::QWord),
+            "tbyte" => Ok(DataType::TByte),
+            "real4" => Ok(DataType::Real4),
+            "real8" => Ok(DataType::Real8),
+            "str4" => Ok(DataType::Str4),
+            "str8" => Ok(DataType::Str8),
+            "str16" => Ok(DataType::Str16),
+            "str32" => Ok(DataType::Str32),
+            "str64" => Ok(DataType::Str64),
+            "str128" => Ok(DataType::Str128),
             _ => Err(format!("Invalid DataType string: {}", input)),
         }
     }
@@ -117,26 +118,26 @@ pub enum SectionError {
     InvalidSectionType,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Variable {
     pub name: String,
     pub ty: DataType,
     pub value: String, // TODO: Make sure that type matches value
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Instruction {
     pub ty: InstructionType,
     pub val: InstructionValue,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 enum InstructionValue {
     SingleValue(String),
     MultipleValue((String, String)),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum InstructionType {
     CALL,
 
