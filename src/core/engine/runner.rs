@@ -16,7 +16,7 @@ pub enum InstructionExecutionError {
 pub fn run_instruction(
     engine: &mut Engine,
 ) -> Result<InstructionExecutionSeccess, InstructionExecutionError> {
-    if engine.state.tick % engine.options.instructions_per_tick != 0 {
+    if engine.state.tick % engine.options.engine.ipt != 0 {
         return Ok(InstructionExecutionSeccess::WaitingForNextTick);
     }
 

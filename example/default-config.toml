@@ -19,10 +19,10 @@ output-logs = { should-write = true, path = "logs.txt" }
 
 # Defines the destination(s) for the program's standard output (stdout).
 # Options:
-# - "All": Sends output to all available destinations.
-# - "Virtual": Sends output to a simulated or virtual environment.
-# - "Console": Sends output directly to the terminal or console.
-# - "File": Sends output to a specified file.
+# - "all": Sends output to all available destinations.
+# - "virtual": Sends output to a simulated or virtual environment.
+# - "console": Sends output directly to the terminal or console.
+# - "file": Sends output to a specified file.
 stdout = ["virtual"]
 
 [engine]
@@ -44,7 +44,7 @@ heap-memory-size = 2048
 # Configures the engine to simulate memory access and retrieval delays on the heap.
 # - `enabled`: Enables or disables the simulation.
 # - `minimum-delay`: Specifies the minimum delay time (in ticks) for memory access simulation.
-heap-access-simulation = { enabled = true, minimum-delay = 1 }
+heap-access-simulation = { enabled = false, minimum-delay = 0 }
 
 # Configures the minimum log level for the system.
 # Options:

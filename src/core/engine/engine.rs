@@ -8,9 +8,9 @@ use egui::TextBuffer;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
-use crate::core::lang::{parse_input, Label, Program, Registers};
-
 use super::runner::{run_instruction, InstructionExecutionError};
+use crate::core::lang::{parse_input, Label, Program, Registers};
+use crate::RootConfig;
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
@@ -28,16 +28,15 @@ impl PayloadImpl for Payload {
 
 pub struct Engine {
     pub program: Option<Program>,
-    heap_memory: Vec<i8>,
     registers: Registers,
 
     engine_data_sender: mpsc::Sender<EngineData>,
     client_command_reciever: mpsc::Receiver<ClientCommands>,
     stdout_sender: mpsc::Sender<StdLogMessage>,
 
-    pub options: EngineOptions,
-    pub state: EngineState,
+    pub options: RootConfig,
 
+    pub state: EngineState,
     pub current_label: Option<Label>,
 }
 
@@ -70,26 +69,17 @@ pub enum EngineRunningState {
     Paused,
 }
 
-pub struct EngineOptions {
-    pub memory_size: usize,
-    pub ticks_per_second: usize,
-    pub instructions_per_tick: usize,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct EngineData {
     #[serde(rename = "Tick")]
     pub tick: usize,
     #[serde(rename = "Current State")]
     pub engine_running_state: EngineRunningState,
-
     #[serde(rename = "Parsing Result")]
     pub program: String,
     #[serde(rename = "IR Repserentation")]
     pub ir_repsersentation: String,
-
     pub responding_to: Option<ClientCommandType>,
-
     pub registers: Registers,
 }
 
@@ -127,7 +117,7 @@ pub enum ClientCommandType {
 
 impl Engine {
     pub fn new(
-        options: EngineOptions,
+        options: RootConfig,
     ) -> (
         Self,
         mpsc::Sender<ClientCommands>,
@@ -138,10 +128,11 @@ impl Engine {
         let (client_send, client_recv) = mpsc::channel::<ClientCommands>();
         let (log_send, log_recv) = mpsc::channel::<StdLogMessage>();
 
+        let default_opts = RootConfig::default();
+
         let engine = Self {
             program: None,
             current_label: None,
-            heap_memory: Vec::with_capacity(options.memory_size),
             registers: Registers {
                 ..Default::default()
             },
@@ -225,7 +216,7 @@ impl Engine {
 
             self.state.tick += 1;
             thread::sleep(Duration::from_millis(
-                (1000 / self.options.ticks_per_second).try_into().unwrap(),
+                (1000 / self.options.engine.tps).try_into().unwrap(),
             ));
         }
     }
