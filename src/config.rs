@@ -5,11 +5,8 @@ use crate::core::engine;
 #[derive(Default, Deserialize, Debug)]
 #[serde(default)]
 pub struct RootConfig {
-    #[serde(default)]
     pub program: ProgramConfig,
-    #[serde(default)]
     pub engine: EngineConfig,
-    #[serde(default)]
     pub ui: UIConfig,
 }
 
