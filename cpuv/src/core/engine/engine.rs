@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
 use super::runner::{run_instruction, InstructionExecutionError};
-use crate::core::IR::{parse_input, Label, Program, Registers};
 use crate::RootConfig;
+use ir_core::{parse, Label, Program, Registers};
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
@@ -227,7 +227,7 @@ impl Engine {
                     self.state.tick = 0;
                     self.state.instruction_ptr = 0;
                     self.state.running_state = EngineRunningState::Running;
-                    let program = parse_input(client_command.payload.unwrap());
+                    let program = parse(client_command.payload.unwrap());
 
                     self.current_label = program.get_start_label().ok();
                     self.program = Some(program);
@@ -253,7 +253,7 @@ impl Engine {
 
             ClientCommandType::ParseFile => {
                 let payload = client_command.payload.extract();
-                let program = parse_input(payload);
+                let program = parse(payload);
                 self.program = Some(program);
                 self.engine_data_sender
                     .send(self.get_current_state(Some(ClientCommandType::ParseFile)));
@@ -261,7 +261,7 @@ impl Engine {
 
             ClientCommandType::ParseWithoutUpdate => {
                 let payload = client_command.payload.extract();
-                let program = parse_input(payload);
+                let program = parse(payload);
                 let mut current_state =
                     self.get_current_state(Some(ClientCommandType::ParseWithoutUpdate));
 

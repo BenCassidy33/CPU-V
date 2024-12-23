@@ -4,11 +4,10 @@ use egui::{Button, Color32, ComboBox, RichText, ScrollArea};
 use egui_extras::{Column, TableBuilder};
 use strum::IntoEnumIterator;
 
+use ir_core::{Label, Program, Variable};
+
 use super::app::{ParsingResultViewOptions, UiApp};
-use crate::core::{
-    engine::{ClientCommandType, ClientCommands},
-    IR::{Label, Program, Variable},
-};
+use crate::core::engine::{ClientCommandType, ClientCommands};
 
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     let window_size = ctx.screen_rect().max;

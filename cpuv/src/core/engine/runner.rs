@@ -1,5 +1,5 @@
 use super::Engine;
-use crate::core::IR::{Instruction, InstructionType};
+use ir_core::{Instruction, InstructionType};
 
 #[derive(Debug)]
 pub enum InstructionExecutionSeccess {
@@ -34,7 +34,9 @@ pub fn run_instruction(
     let instruction = &instructions[engine.state.instruction_ptr];
     println!("{:?}", instruction);
 
-    match instruction.ty {}
+    match instruction.ty {
+        _ => todo!(),
+    }
     engine.state.instruction_ptr += 1;
     return Ok(InstructionExecutionSeccess::Ok);
 }
