@@ -814,6 +814,7 @@ dependencies = [
  "egui-file-dialog",
  "egui_code_editor",
  "egui_extras",
+ "ir_core",
  "serde",
  "serde_json",
  "strum",
@@ -1751,6 +1752,13 @@ checksum = "62f822373a4fe84d4bb149bf54e584a7f4abec90e072ed49cda0edea5b95471f"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "ir_core"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
