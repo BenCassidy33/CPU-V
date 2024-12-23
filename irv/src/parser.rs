@@ -68,10 +68,7 @@ pub fn parse(file: String) -> Program {
 }
 
 pub fn has_jump(line: &&str) -> bool {
-    return line.contains("JMP")
-        || line.contains("JEQ")
-        || line.contains("JLT")
-        || line.contains("JGT");
+    line.contains("JMP") || line.contains("JEQ") || line.contains("JLT") || line.contains("JGT")
 }
 
 pub fn parse_extern(label_functions: &[&str]) -> (Vec<String>, usize) {
@@ -89,7 +86,7 @@ pub fn parse_extern(label_functions: &[&str]) -> (Vec<String>, usize) {
         functions.push(line.trim().to_string());
     }
 
-    return (functions, label_functions.len() - 1);
+    (functions, label_functions.len() - 1)
 }
 
 pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
@@ -111,7 +108,7 @@ pub fn parse_label(label_instructions: &[&str]) -> (Vec<Instruction>, usize) {
         instructions.push(Instruction::from_str(line).unwrap())
     }
 
-    return (instructions, label_instructions.len() - 1);
+    (instructions, label_instructions.len() - 1)
 }
 
 pub fn parse_variables(variable_label: &[&str]) -> (Vec<Variable>, usize) {
@@ -134,5 +131,5 @@ pub fn parse_variables(variable_label: &[&str]) -> (Vec<Variable>, usize) {
         })
     }
 
-    return (variables, variable_label.len());
+    (variables, variable_label.len())
 }

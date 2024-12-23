@@ -1,9 +1,7 @@
-use std::fmt::{self, Display};
 use std::sync::mpsc;
 use std::thread::{self};
 use std::time::{self, Duration};
 
-use egui::TextBuffer;
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 
@@ -21,7 +19,7 @@ trait PayloadImpl {
 
 impl PayloadImpl for Payload {
     fn extract(self) -> String {
-        return self.unwrap_or("ERROR: Payload must not be none!".to_string());
+        self.unwrap_or("ERROR: Payload must not be none!".to_string())
     }
 }
 
@@ -52,6 +50,7 @@ pub struct StdLogMessage {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(warnings)]
 pub enum StdLogLevel {
     INFO,
     WARN,
@@ -127,8 +126,6 @@ impl Engine {
         let (client_send, client_recv) = mpsc::channel::<ClientCommands>();
         let (log_send, log_recv) = mpsc::channel::<StdLogMessage>();
 
-        let default_opts = RootConfig::default();
-
         let engine = Self {
             program: None,
             current_label: None,
@@ -148,18 +145,18 @@ impl Engine {
             },
         };
 
-        return (engine, client_send, data_recv, log_recv);
+        (engine, client_send, data_recv, log_recv)
     }
 
     pub fn get_current_state(&self, responding_to: Option<ClientCommandType>) -> EngineData {
-        return EngineData {
+        EngineData {
             tick: self.state.tick,
             engine_running_state: self.state.running_state.clone(),
             program: self.program.clone(),
             ir_repsersentation: "TODO".to_string(),
             responding_to,
             registers: self.registers.clone(),
-        };
+        }
     }
 
     fn send_stdlog(&self, log_level: StdLogLevel, message: &str) {
@@ -169,7 +166,8 @@ impl Engine {
             chrono::Local::now().format(TIME_FORMAT).to_string(),
             message
         );
-        let log_res = self
+
+        let _ = self
             .stdout_sender
             .send(StdLogMessage { message, log_level });
     }
@@ -178,7 +176,7 @@ impl Engine {
     // state
     pub fn run(mut self) {
         self.send_stdlog(StdLogLevel::INFO, "Initalizing Engine...");
-        let start_time = time::Instant::now();
+        let _start_time = time::Instant::now();
 
         loop {
             if let Ok(client_command) = self.client_command_reciever.try_recv() {
@@ -190,27 +188,23 @@ impl Engine {
             }
 
             // THIS NEEDS TO STAY HERE FOR THIS TO WORK!!!
-            let send_result = self.engine_data_sender.send(self.get_current_state(None));
+            let _send_result = self.engine_data_sender.send(self.get_current_state(None));
 
             let instruction_execution_result = run_instruction(&mut self);
-            match instruction_execution_result {
-                Err(e) => {
-                    if e != InstructionExecutionError::EndOfLabel {
-                        self.state.running_state = EngineRunningState::Stopped;
-                        self.send_stdlog(
-                            StdLogLevel::ERROR,
-                            format!("Instruction Failed! {:?}", e).as_str(),
-                        );
-                    } else {
-                        self.state.running_state = EngineRunningState::Stopped;
-                        self.send_stdlog(
-                            StdLogLevel::INFO,
-                            format!("Program Exited With Success!").as_str(),
-                        );
-                    }
+            if let Err(e) = instruction_execution_result {
+                if e != InstructionExecutionError::EndOfLabel {
+                    self.state.running_state = EngineRunningState::Stopped;
+                    self.send_stdlog(
+                        StdLogLevel::ERROR,
+                        format!("Instruction Failed! {:?}", e).as_str(),
+                    );
+                } else {
+                    self.state.running_state = EngineRunningState::Stopped;
+                    self.send_stdlog(
+                        StdLogLevel::INFO,
+                        "Program Exited With Success!".to_string().as_str(),
+                    );
                 }
-
-                _ => {}
             }
 
             self.state.tick += 1;
@@ -231,7 +225,7 @@ impl Engine {
 
                     self.current_label = program.get_start_label().ok();
                     self.program = Some(program);
-                    let send_res = self
+                    let _send_res = self
                         .engine_data_sender
                         .send(self.get_current_state(Some(ClientCommandType::Start)));
                 } else {
@@ -241,13 +235,15 @@ impl Engine {
 
             ClientCommandType::Pause => {
                 self.state.running_state = EngineRunningState::Paused;
-                self.engine_data_sender
+                let _ = self
+                    .engine_data_sender
                     .send(self.get_current_state(Some(ClientCommandType::Pause)));
             }
 
             ClientCommandType::Stop => {
                 self.state.running_state = EngineRunningState::Stopped;
-                self.engine_data_sender
+                let _ = self
+                    .engine_data_sender
                     .send(self.get_current_state(Some(ClientCommandType::Stop)));
             }
 
@@ -255,7 +251,8 @@ impl Engine {
                 let payload = client_command.payload.extract();
                 let program = parse(payload);
                 self.program = Some(program);
-                self.engine_data_sender
+                let _ = self
+                    .engine_data_sender
                     .send(self.get_current_state(Some(ClientCommandType::ParseFile)));
             }
 
@@ -266,7 +263,7 @@ impl Engine {
                     self.get_current_state(Some(ClientCommandType::ParseWithoutUpdate));
 
                 current_state.program = Some(program);
-                self.engine_data_sender.send(current_state);
+                let _ = self.engine_data_sender.send(current_state);
             }
 
             ClientCommandType::TranslateToIR => todo!(),

@@ -1,17 +1,15 @@
-use std::collections::BTreeMap;
-
 use egui::{Button, Color32, ComboBox, RichText, ScrollArea};
 use egui_extras::{Column, TableBuilder};
 use strum::IntoEnumIterator;
 
-use irv::{Label, Program, Variable};
+use irv::{Label, Variable};
 
 use super::app::{ParsingResultViewOptions, UiApp};
 use crate::core::engine::{ClientCommandType, ClientCommands};
 
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     let window_size = ctx.screen_rect().max;
-    let pannel = egui::SidePanel::left("Text Editor")
+    let _pannel = egui::SidePanel::left("Text Editor")
         .min_width(window_size.x * 0.2)
         .show(ctx, |ui| {
             let available_height = ui.available_height();
@@ -85,7 +83,7 @@ pub fn render_parsing_results(app: &mut UiApp, ui: &mut egui::Ui) {
                 let mut viewable =
                     format!("{:#?}", app.previous_data.program.clone().unwrap()).to_string();
 
-                let output = egui::TextEdit::multiline(&mut viewable)
+                let _output = egui::TextEdit::multiline(&mut viewable)
                     .desired_rows(150)
                     .desired_width(ui.available_width())
                     .background_color(Color32::BLACK)
@@ -132,7 +130,7 @@ pub fn render_extern_functions(funcs: &Vec<String>, ui: &mut egui::Ui) {
             for func in funcs {
                 body.row(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.label(format!("{}", func));
+                        ui.label(func.to_string());
                     });
                 });
             }
@@ -151,7 +149,7 @@ pub fn render_static_variables(vars: &Vec<Variable>, ui: &mut egui::Ui) {
             .column(Column::exact(avail_width).resizable(true))
             .column(Column::remainder().resizable(true))
             .header(30.0, |mut header| {
-                for head in vec!["Name", "Data Type", "Value"] {
+                for head in ["Name", "Data Type", "Value"] {
                     header.col(|ui| {
                         ui.heading(head);
                         ui.add_space(10.0)
@@ -162,7 +160,7 @@ pub fn render_static_variables(vars: &Vec<Variable>, ui: &mut egui::Ui) {
                 for var in vars {
                     body.row(20.0, |mut row| {
                         row.col(|ui| {
-                            ui.label(format!("{}", var.name));
+                            ui.label(var.name.to_string());
                         });
 
                         row.col(|ui| {
@@ -170,16 +168,18 @@ pub fn render_static_variables(vars: &Vec<Variable>, ui: &mut egui::Ui) {
                         });
 
                         row.col(|ui| {
-                            ui.label(format!("{}", var.inital_value.to_string()));
+                            ui.label(var.inital_value.to_string());
                         });
                     })
                 }
             });
     });
 }
-pub fn render_labels(labels: &Vec<Label>, ui: &mut egui::Ui) {}
+pub fn render_labels(_labels: &[Label], _ui: &mut egui::Ui) {
+    todo!()
+}
 
-pub fn render_controls(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
+pub fn render_controls(app: &mut UiApp, _ctx: &egui::Context, ui: &mut egui::Ui) {
     for command_type in ClientCommandType::iter() {
         if ui
             .add(Button::new(
@@ -187,7 +187,7 @@ pub fn render_controls(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) 
             ))
             .clicked()
         {
-            app.command_sender.send(ClientCommands {
+            let _ = app.command_sender.send(ClientCommands {
                 payload: match command_type {
                     ClientCommandType::Start
                     | ClientCommandType::ParseFile

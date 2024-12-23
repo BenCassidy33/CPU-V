@@ -1,9 +1,6 @@
-use egui::{
-    panel::TopBottomSide, Align, Area, CentralPanel, Color32, Frame, Resize, RichText,
-    TopBottomPanel,
-};
+use egui::{RichText, TopBottomPanel};
 
-use crate::core::engine::{StdLogLevel, StdLogMessage};
+use crate::core::engine::StdLogLevel;
 
 use super::app::UiApp;
 
@@ -27,15 +24,16 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
             });
 
             ui.horizontal(|ui| {
-                let label = ui.label("System Logs");
+                ui.label("System Logs");
                 ui.add_space(ui.available_width() * 0.481);
                 ui.label("Stdout");
             });
 
+            // System Logs
             ui.horizontal(|ui| {
                 ui.vertical(|ui| {
                     ui.set_width(ui.available_width() * 0.5);
-                    let system_logs = egui::TextEdit::multiline(&mut app.system_logs.join("\n"))
+                    egui::TextEdit::multiline(&mut app.system_logs.join("\n"))
                         .desired_rows(10)
                         .desired_width(ui.available_width())
                         .clip_text(true)
@@ -43,8 +41,9 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
                         .show(ui);
                 });
 
+                // Virtual Stdout
                 ui.vertical(|ui| {
-                    let stdout = egui::TextEdit::multiline(&mut app.stdout.join("\n"))
+                    egui::TextEdit::multiline(&mut app.stdout.join("\n"))
                         .desired_rows(10)
                         .desired_width(ui.available_width())
                         .clip_text(true)

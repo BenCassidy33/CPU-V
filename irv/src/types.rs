@@ -10,12 +10,12 @@ pub struct Program {
 
 impl Program {
     pub fn new() -> Self {
-        return Program {
+        Program {
             extern_functions: None,
             static_variables: Vec::new(),
             labels: None,
             //env: None,
-        };
+        }
     }
 
     pub fn get_start_label(&self) -> Result<Label, ()> {
@@ -25,7 +25,7 @@ impl Program {
             }
         }
 
-        return Err(());
+        Err(())
     }
 }
 
@@ -38,25 +38,6 @@ pub struct Env {}
 pub struct Label {
     pub label_name: String,
     pub instructions: Option<Vec<Instruction>>,
-}
-pub mod DataSizes {
-    pub type Byte = u8;
-    pub type SByte = i8;
-    pub type Word = u16;
-    pub type SWord = i16;
-    pub type DWord = u32;
-    pub type SDWord = i32;
-    pub type QWord = u64;
-    pub type TByte = [u8; 10];
-    pub type Real4 = f32;
-    pub type Real8 = f64;
-
-    pub type Str4 = [char; 4];
-    pub type Str8 = [char; 8];
-    pub type Str16 = [char; 16];
-    pub type Str32 = [char; 32];
-    pub type Str64 = [char; 64];
-    pub type Str128 = [char; 128];
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -130,7 +111,7 @@ pub struct Instruction {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-enum InstructionValue {
+pub enum InstructionValue {
     SingleValue(String),
     MultipleValue((String, String)),
 }
@@ -160,17 +141,11 @@ pub enum InstructionType {
 
 impl InstructionType {
     pub fn has_multiple_values(&self) -> bool {
-        return match self {
-            Self::JMP => true,
-            _ => false,
-        };
+        matches!(self, Self::JMP)
     }
 
     pub fn is_valueless(&self) -> bool {
-        return match self {
-            Self::NOP => true,
-            _ => false,
-        };
+        matches!(self, Self::NOP)
     }
 }
 
@@ -203,6 +178,7 @@ impl FromStr for Instruction {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        #[allow(unused)]
         let mut instruction_label = String::new();
         let mut value = String::new();
 
@@ -227,7 +203,7 @@ impl FromStr for Instruction {
             values = value.split_once(",");
         }
 
-        return Ok(Self {
+        Ok(Self {
             ty,
             val: match values {
                 Some(val) => {
@@ -237,7 +213,7 @@ impl FromStr for Instruction {
                 }
                 None => InstructionValue::SingleValue(value.to_string()),
             },
-        });
+        })
     }
 }
 

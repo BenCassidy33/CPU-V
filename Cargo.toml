@@ -1,2 +1,6 @@
 [workspace]
 members = ["irv", "cpuv"]
+resolver = "3"
+
+[profile.release]
+opt-level = 3

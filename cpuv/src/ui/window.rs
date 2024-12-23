@@ -22,7 +22,7 @@ pub fn init(
         ..Default::default()
     };
 
-    eframe::run_native(
+    let _ = eframe::run_native(
         "CPUV, (A CPU Visualizer)",
         opts,
         Box::new(|cc| {

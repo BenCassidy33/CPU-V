@@ -1,7 +1,5 @@
 use serde::Deserialize;
 
-use crate::core::engine;
-
 #[derive(Default, Deserialize, Debug)]
 #[serde(default)]
 pub struct RootConfig {
@@ -62,6 +60,7 @@ impl Default for LogsConfig {
     }
 }
 
+#[allow(warnings)]
 #[derive(Default, Deserialize, Debug)]
 pub enum StdoutOption {
     All,
@@ -93,20 +92,11 @@ impl Default for EngineConfig {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 #[serde(default)]
 pub struct HeapAccessSimulationConfig {
     pub enabled: bool,
     pub minimum_delay: u32,
-}
-
-impl Default for HeapAccessSimulationConfig {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            minimum_delay: 0,
-        }
-    }
 }
 
 #[derive(Default, Deserialize, Debug)]
@@ -135,6 +125,7 @@ impl Default for UIConfig {
     }
 }
 
+#[allow(warnings)]
 #[derive(Default, Deserialize, Debug)]
 pub enum UITheme {
     light,

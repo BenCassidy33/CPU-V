@@ -3,11 +3,10 @@ mod core;
 mod ui;
 
 use core::engine::Engine;
-use irv::parse;
 
-use clap::{Args, Parser};
+use clap::Parser;
 use config::RootConfig;
-use std::{env::args, process::exit, thread};
+use std::{process::exit, thread};
 
 const FPS: u64 = 60;
 
@@ -22,7 +21,7 @@ fn main() {
         engine.run();
     });
 
-    ui::window::init(client_command_sender, engine_data_reciever, stdlog_reciever);
+    let _ = ui::window::init(client_command_sender, engine_data_reciever, stdlog_reciever);
 }
 
 #[derive(Parser, Debug)]
@@ -48,29 +47,27 @@ pub fn parse_config(config_path: Option<String>) -> RootConfig {
     } else if home_config.is_ok() {
         let tmp = toml::from_str::<config::RootConfig>(&home_config.unwrap());
         if let Err(ref e) = tmp {
-            eprintln!("{}", e.to_string());
+            eprintln!("{}", e);
             exit(1);
         }
         config = tmp.unwrap();
-    } else {
-        if config_path.is_some() {
-            let config_path = config_path.clone().unwrap();
-            let mut raw = std::fs::read_to_string(&config_path);
+    } else if config_path.is_some() {
+        let config_path = config_path.clone().unwrap();
+        let raw = std::fs::read_to_string(&config_path);
 
-            if raw.is_err() {
-                eprintln!("Config file not found at {:?}. Exiting...", config_path);
-                exit(1);
-            }
+        if raw.is_err() {
+            eprintln!("Config file not found at {:?}. Exiting...", config_path);
+            exit(1);
+        }
 
-            let tmp = toml::from_str::<config::RootConfig>(&raw.unwrap());
-            if let Err(ref e) = tmp {
-                eprintln!("{}", e.to_string());
-                exit(1);
-            }
+        let tmp = toml::from_str::<config::RootConfig>(&raw.unwrap());
+        if let Err(ref e) = tmp {
+            eprintln!("{}", e);
+            exit(1);
+        }
 
-            config = tmp.unwrap();
-        };
+        config = tmp.unwrap();
     };
 
-    return config;
+    config
 }

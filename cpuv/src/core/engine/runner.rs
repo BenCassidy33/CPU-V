@@ -1,5 +1,6 @@
+#![allow(warnings)]
+
 use super::Engine;
-use irv::{Instruction, InstructionType};
 
 #[derive(Debug)]
 pub enum InstructionExecutionSeccess {

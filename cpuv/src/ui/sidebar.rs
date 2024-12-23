@@ -3,7 +3,6 @@ use egui_extras::{Column, TableBuilder};
 use std::collections::BTreeMap;
 
 use super::app::UiApp;
-use crate::core::engine::EngineData;
 
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     if ctx.input(|i| i.key_pressed(egui::Key::P)) {
@@ -15,11 +14,11 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
     }
 
     let window_size = ctx.screen_rect().max;
-    let side_pannel = egui::SidePanel::right("Engine Data")
+    let _side_pannel = egui::SidePanel::right("Engine Data")
         .min_width(window_size.x * 0.15)
         .resizable(true)
         .show(ctx, |ui| {
-            let available_height = ui.available_height();
+            ui.available_height();
 
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
@@ -36,13 +35,7 @@ pub fn render(app: &mut UiApp, ctx: &egui::Context) {
 
             ui.add_space(50.0);
 
-            //ui.vertical(|ui| {
-            //    ui.set_height(available_height * 0.4);
-            //    ui.heading(RichText::new("Engine Controls").size(36.0).strong())
-            //});
-
             ui.vertical(|ui| {
-                //ui.set_height(available_height * 0.5);
                 ui.heading(RichText::new("Engine Data").size(36.0).strong());
 
                 ui.add_space(20.0);
@@ -82,7 +75,7 @@ pub fn show_engine_data_table(ui: &mut egui::Ui, data: BTreeMap<String, serde_js
         })
         .body(|mut body| {
             for (key, val) in data.iter() {
-                if ignored_entries.contains(&&(*key.as_str())) {
+                if ignored_entries.contains(&key.as_str()) {
                     continue;
                 }
 

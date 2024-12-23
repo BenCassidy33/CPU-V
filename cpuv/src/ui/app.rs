@@ -1,6 +1,6 @@
 use egui_code_editor::{ColorTheme, Syntax};
 use egui_file_dialog::FileDialog;
-use std::{default, sync::mpsc, time::Duration};
+use std::{sync::mpsc, time::Duration};
 
 use egui::Ui;
 
@@ -48,7 +48,7 @@ impl UiApp {
         data_recv: mpsc::Receiver<EngineData>,
         stdlog_reciever: mpsc::Receiver<StdLogMessage>,
     ) -> Self {
-        return Self {
+        Self {
             data_recv,
             command_sender,
             stdlog_reciever,
@@ -57,15 +57,13 @@ impl UiApp {
             code: "".to_string(),
             file_dialog: FileDialog::new(),
             file_path: None,
-            system_logs: Vec::from(vec!["".to_string()]),
-            stdout: Vec::from(vec!["".to_string()]),
+            system_logs: vec!["".to_string()],
+            stdout: vec!["".to_string()],
             ui_opts: Default::default(),
-        };
+        }
     }
 
-    pub fn show_code_editor(&mut self, ui: &mut Ui, ctx: &egui::Context) {
-        let aval_height = ctx.available_rect().max.y;
-
+    pub fn show_code_editor(&mut self, ui: &mut Ui, _ctx: &egui::Context) {
         egui_code_editor::CodeEditor::default()
             .id_source("Code Editor")
             .with_rows(20)
@@ -78,10 +76,10 @@ impl UiApp {
 
     pub fn show_file_picker(&mut self, ctx: &eframe::egui::Context, ui: &mut egui::Ui) {
         if (ui.button("Open File")).clicked() {
-            self.file_dialog.select_file();
+            FileDialog::pick_file(&mut self.file_dialog)
         }
 
-        if let Some(path) = self.file_dialog.update(ctx).selected() {
+        if let Some(path) = self.file_dialog.update(ctx).picked() {
             if self.file_path.is_some()
                 && (self.file_path.clone().unwrap() == path.to_str().unwrap())
             {
@@ -98,7 +96,7 @@ impl UiApp {
 }
 
 impl eframe::App for UiApp {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.request_repaint_after(Duration::from_millis(1000 / FPS));
         if let Ok(data) = self.data_recv.try_recv() {
             self.previous_data = data;

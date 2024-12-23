@@ -1,11 +1,11 @@
 use egui::RichText;
 use egui_extras::{Column, TableBuilder};
-use std::{collections::BTreeMap, process::exit};
+use std::collections::BTreeMap;
 
 use super::app::UiApp;
 
 // TODO: Split tables into different sizes, kinda like: https://en.wikibooks.org/wiki/X86_Assembly/X86_Architecture
-pub fn render(app: &mut UiApp, ctx: &egui::Context, ui: &mut egui::Ui) {
+pub fn render(app: &mut UiApp, _ctx: &egui::Context, ui: &mut egui::Ui) {
     let mut register_data = serde_json::from_value::<BTreeMap<String, serde_json::Value>>(
         serde_json::to_value(&app.previous_data.registers).unwrap(),
     )
