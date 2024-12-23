@@ -3,8 +3,8 @@ name = "cpuv"
 authors = ["Benjamin Cassidy"]
 license = "MIT"
 version = "0.1.0"
-edition = "2024"
-rust-version = "1.85"
+edition = "2021"
+rust-version = "1.82.0"
 readme = "README.md"
 repository = "https://github.com/BenCassidy33/CPU-V"
 

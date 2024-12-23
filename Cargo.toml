@@ -1,6 +1,6 @@
 [workspace]
 members = ["irv", "cpuv"]
-resolver = "3"
+resolver = "2"
 
 [profile.release]
 opt-level = 3

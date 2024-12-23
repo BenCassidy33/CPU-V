@@ -42,7 +42,7 @@ pub fn parse_config(config_path: Option<String>) -> RootConfig {
     let home_config = std::fs::read_to_string("~/.config/cpuv/config.toml");
 
     if config_path.is_none() && home_config.is_err() {
-        println!("Config not specified. Defaulting.",);
+        println!("Config not specified, Defaulting.",);
         return config;
     } else if home_config.is_ok() {
         let tmp = toml::from_str::<config::RootConfig>(&home_config.unwrap());
