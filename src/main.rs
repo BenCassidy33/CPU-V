@@ -4,7 +4,7 @@ mod config;
 mod core;
 mod ui;
 
-use core::{engine::Engine, lang::parse_input};
+use core::{engine::Engine, IR::parse_input};
 
 use clap::{Args, Parser};
 use config::RootConfig;

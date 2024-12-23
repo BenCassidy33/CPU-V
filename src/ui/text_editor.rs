@@ -5,10 +5,9 @@ use egui_extras::{Column, TableBuilder};
 use strum::IntoEnumIterator;
 
 use super::app::{ParsingResultViewOptions, UiApp};
-use crate::core::lang::{Label, Program};
 use crate::core::{
     engine::{ClientCommandType, ClientCommands},
-    lang::Variable,
+    IR::{Label, Program, Variable},
 };
 
 pub fn render(app: &mut UiApp, ctx: &egui::Context) {

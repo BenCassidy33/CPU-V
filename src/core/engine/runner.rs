@@ -34,24 +34,9 @@ pub fn run_instruction(
     let instruction = &instructions[engine.state.instruction_ptr];
     println!("{:?}", instruction);
 
-    //match instruction.ty {
-    //    InstructionType::CALL => todo!(),
-    //    InstructionType::LOAD => todo!(),
-    //    InstructionType::MOVE => todo!(),
-    //    InstructionType::INC => todo!(),
-    //    InstructionType::DEC => todo!(),
-    //    InstructionType::ADD => todo!(),
-    //    InstructionType::SUB => todo!(),
-    //    InstructionType::CMP => todo!(),
-    //    InstructionType::JEQ => todo!(),
-    //    InstructionType::JLT => todo!(),
-    //    InstructionType::JGT => todo!(),
-    //    InstructionType::JMP => todo!(),
-    //    InstructionType::NOP => todo!(),
-    //    InstructionType::BRK => todo!(),
-    //    InstructionType::EXIT => todo!(),
-    //}
-    //
+    match instruction.ty {}
     engine.state.instruction_ptr += 1;
     return Ok(InstructionExecutionSeccess::Ok);
 }
+
+pub fn call_external_function(function_name: String, args: Vec<String>) {}
