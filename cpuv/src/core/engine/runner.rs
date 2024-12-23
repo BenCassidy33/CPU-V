@@ -1,5 +1,5 @@
 use super::Engine;
-use ir_core::{Instruction, InstructionType};
+use irv::{Instruction, InstructionType};
 
 #[derive(Debug)]
 pub enum InstructionExecutionSeccess {

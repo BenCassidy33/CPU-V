@@ -1,2 +1,2 @@
 [workspace]
-members = ["ir_core", "cpuv"]
+members = ["irv", "cpuv"]

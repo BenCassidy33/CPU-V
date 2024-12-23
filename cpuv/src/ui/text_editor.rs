@@ -4,7 +4,7 @@ use egui::{Button, Color32, ComboBox, RichText, ScrollArea};
 use egui_extras::{Column, TableBuilder};
 use strum::IntoEnumIterator;
 
-use ir_core::{Label, Program, Variable};
+use irv::{Label, Program, Variable};
 
 use super::app::{ParsingResultViewOptions, UiApp};
 use crate::core::engine::{ClientCommandType, ClientCommands};

@@ -814,7 +814,7 @@ dependencies = [
  "egui-file-dialog",
  "egui_code_editor",
  "egui_extras",
- "ir_core",
+ "irv",
  "serde",
  "serde_json",
  "strum",
@@ -1755,7 +1755,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ir_core"
+name = "irv"
 version = "0.1.0"
 dependencies = [
  "serde",

@@ -9,7 +9,7 @@ use strum::EnumIter;
 
 use super::runner::{run_instruction, InstructionExecutionError};
 use crate::RootConfig;
-use ir_core::{parse, Label, Program, Registers};
+use irv::{parse, Label, Program, Registers};
 
 const TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 

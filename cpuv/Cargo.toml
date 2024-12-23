@@ -10,7 +10,7 @@ repository = "https://github.com/BenCassidy33/CPU-V"
 
 [dependencies]
 
-ir_core = { version = "0.1.0", path = "../ir_core" }
+irv = { version = "0.1.0", path = "../irv" }
 
 chrono = "0.4.39"
 clap = { version = "4.5.23", features = ["derive"] }

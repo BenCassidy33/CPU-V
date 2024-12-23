@@ -1,11 +1,9 @@
-#![allow(warnings, unused)]
-
 mod config;
 mod core;
 mod ui;
 
 use core::engine::Engine;
-use ir_core::parse;
+use irv::parse;
 
 use clap::{Args, Parser};
 use config::RootConfig;

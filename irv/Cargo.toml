@@ -1,7 +1,8 @@
 [package]
-name = "ir_core"
+name = "irv"
 version = "0.1.0"
 edition = "2024"
+description = "The Intermediate Representation for the CPU-V Platform"
 
 [dependencies]
 serde = { version = "1.0.216", features = ["derive"] }
