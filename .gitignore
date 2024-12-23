@@ -1,8 +1,6 @@
 /cpuv/target
-v:null
-/ir-core/target
-
-
-# Added by cargo
-
+/irv/target
 /target
+/docs/book
+/irv/docs/book
+v:null
