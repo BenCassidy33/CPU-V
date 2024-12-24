@@ -1,0 +1,8 @@
+[package]
+name = "irv"
+version = "0.1.0"
+edition = "2021"
+description = "The Intermediate Representation for the CPU-V Platform. Use this crate to create other languages that can then be implimented into the CPU-V Platform."
+
+[dependencies]
+serde = { version = "1.0.216", features = ["derive"] }
