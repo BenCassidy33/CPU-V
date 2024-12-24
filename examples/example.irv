@@ -9,24 +9,23 @@
 
 .section .program:
 @start:
-    LOAD value1 R1
-    LOAD value2 R2
-    INC R1
-    DEC R2
-    MOVE R1 R3
-    ADD R1 R2
-    SUB R3 R2
-    CMP R1 R2
-    JEQ @equal
-    JLT @less_than
-    JGT @greater_than
+    LOAD 5 rax // rax: 5
+    LOAD 7 rbx
+    INC rax
+    DEC rbx
+    MOVE rax rcx
+    ADD rcx 5
+    SUB rax 5
+    CMP rax rcx
+        JEQ @equal
+        JLT @less_than
+        JGT @greater_than
 
 @less_than:
     NOP
     JMP @end
 
 @greater_than:
-    CALL print_result
     JMP @end
 
 @equal:
@@ -34,4 +33,5 @@
     JMP @end
 
 @end:
+    CALL printf rax rcx
     EXIT 0
